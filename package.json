@@ -1,0 +1,21 @@
+{
+  "name": "gun-level",
+  "version": "1.0.0",
+  "description": "Gun extension for levelDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "gun",
+    "gundb",
+    "leveldb",
+    "level"
+  ],
+  "author": "Jesse Gibson",
+  "license": "MIT",
+  "dependencies": {
+    "gun": "^0.2.5",
+    "level": "^1.3.0"
+  }
+}
