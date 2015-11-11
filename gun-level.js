@@ -2,7 +2,6 @@
 'use strict';
 
 var Gun = require('gun'),
-  fs = require('fs'),
   levelUP = require('level'),
   defaultFolder = 'level/';
 

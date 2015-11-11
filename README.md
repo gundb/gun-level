@@ -2,20 +2,30 @@
 
 LevelDB is awesome. It's awesomer with gun.
 
-This driver let's you save your gundb data onto Level in just a few lines of code. Really!
+This driver let's you use level as your persistence layer for gun.
 
 ## usage
 
-After downloading this driver, `require('gun-level')` in your app and instantiate your instance with these options:
+Just `npm install gun-level` and replace `require('gun')` with `require('gun-level')`. Now tell gun you want to save to level by setting the `level` option to true, like so:
 
 ```
-var gun = require('gun')({
+var Gun = require('gun-level');
+
+var gun = new Gun({
+  level: true
+})
+```
+
+Yay! You're now levelDB compatible! Now by default, your data will be saved into `./level/`. You can change it by providing a path to your folder...
+
+```
+new Gun({
   level: {
-    folder: 'folder-name/'
+    folder: 'save-here/'
   }
 })
 ```
 
-And we'll save your data into that folder. If no path is specified, we'll send it into a new folder named `level/`.
+Magical. As much as I enjoy a good long read, that really is all there is to it. If you find any problems, go ahead and submit an issue or a pull request.
 
-As much as I enjoy a good long read, that really is all there is to it. If you find any problems, please submit an issue or a pull request. Feedback is always awesome!
+Thanks for checking out gun-level!

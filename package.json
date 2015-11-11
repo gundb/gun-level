@@ -1,7 +1,7 @@
 {
   "name": "gun-level",
   "version": "1.0.0",
-  "description": "Gun extension for levelDB",
+  "description": "levelDB persistence layer for gun",
   "main": "index.js",
   "scripts": {
     "test": "jasmine"
@@ -10,7 +10,8 @@
     "gun",
     "gundb",
     "leveldb",
-    "level"
+    "level",
+    "driver"
   ],
   "author": "Jesse Gibson",
   "license": "MIT",
