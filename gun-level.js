@@ -2,10 +2,11 @@
 'use strict';
 
 var Gun = require('gun'),
+  fs = require('fs'),
   levelUP = require('level'),
   defaultFolder = 'level/';
 
-var path = {};
+var folder = {};
 
 
 function valid(err) {
@@ -28,12 +29,34 @@ function patch(opt) {
   opt.hooks = opt.hooks || {};
   opt.level = opt.level || {};
 
-  var folder, level = opt.level;
   opt.level.folder = opt.level.folder || defaultFolder;
-  folder = level.folder;
-  opt.level.folder = folder && folder.replace(/\/$/, '') + '/';
 
   return opt;
+}
+
+
+
+function blaze(path) {
+  var depth = [];
+
+  function recurse(path) {
+    if (!path) {
+      return 'done!';
+    }
+    path = path.split('/').filter(function (dir) {
+      return !!dir;
+    });
+    depth.push(path.shift());
+    var folder = depth.join('/');
+    if (fs.existsSync(folder)) {
+      return recurse(path && path.join('/'));
+    } else {
+      fs.mkdirSync(folder);
+      return recurse(path && path.join('/'));
+    }
+  }
+
+  return recurse(path);
 }
 
 
@@ -42,19 +65,20 @@ function setup(gun, opt) {
 
   opt = patch(opt);
 
-  var driver, level, folder = opt.level.folder;
+  var driver, level, path = opt.level.folder;
 
 
   // level instances can't share a database
   // set it to the instance already using that path.
-  if (!path[folder]) {
+  if (!folder[path]) {
+    blaze(path);
 
-    path[folder] = level = levelUP(folder, {
+    folder[path] = level = levelUP(path, {
       valueEncoding: 'json'
     });
 
   } else {
-    level = path[folder];
+    level = folder[path];
   }
 
 

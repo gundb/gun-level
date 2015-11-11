@@ -7,10 +7,10 @@ var Gun = require('../gun-level'),
   gun;
 
 
-var testFolders = [];
+var testFolder = 'spec/db-test/';
 
 
-function clean(path) {
+function remove(path) {
   if (!path) {
     return;
   }
@@ -18,7 +18,7 @@ function clean(path) {
     fs.readdirSync(path).forEach(function (file, index) {
       var curPath = path.replace(/\/*$/, '/') + file;
       if (fs.lstatSync(curPath).isDirectory()) {
-        clean(curPath);
+        remove(curPath);
       } else {
         fs.unlinkSync(curPath);
       }
@@ -34,15 +34,19 @@ function clean(path) {
 }
 
 function setup(folder) {
-  testFolders.push(folder);
   return new Gun({
     level: {
-      folder: folder
+      folder: testFolder + folder
     }
   });
 }
+
+function exists(folder) {
+  return fs.existsSync(testFolder + folder);
+}
+
 afterAll(function () {
-  testFolders.map(clean);
+  remove(testFolder);
 });
 
 describe("gun-level's", function () {
@@ -180,17 +184,24 @@ describe("gun-level's", function () {
 
   describe('folder option', function () {
 
+    // If I try to test the default, I might overwrite
+    // real, existing data.
+    xit('should default to "./level/"', function () {
+      setup();
+      expect(exists('./level')).toBe(true);
+    });
 
     it('should let you point to any folder', function () {
       var folder = 'tomato-potato';
       setup(folder).get('thing').set();
 
-      expect(fs.existsSync(folder)).toBe(true);
+      expect(exists(folder)).toBe(true);
     });
 
-    it('should default to "./level/"', function () {
-      setup();
-      expect(fs.existsSync('./level')).toBe(true);
+    it('should allow paths at any depth', function () {
+      var folder = 'really/deep/path/';
+      setup(folder);
+      expect(exists(folder)).toBe(true);
     });
 
   });

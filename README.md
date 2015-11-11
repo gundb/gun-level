@@ -21,7 +21,7 @@ Yay! You're now levelDB compatible! Now by default, your data will be saved into
 ```
 new Gun({
   level: {
-    folder: 'save-here/'
+    folder: 'fabulous/folder/path/'
   }
 })
 ```
