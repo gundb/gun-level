@@ -1,5 +1,5 @@
 /*jslint node: true, nomen: true */
-/*globals describe, it, xit, expect, beforeEach, afterAll */
+/*globals describe, it, pending, expect, beforeEach, afterAll */
 'use strict';
 
 var Gun = require('../gun-level'),
@@ -36,7 +36,7 @@ function remove(path) {
 function setup(folder) {
   return new Gun({
     level: {
-      folder: testFolder + folder
+      folder: testFolder + folder || null
     }
   });
 }
@@ -163,17 +163,14 @@ describe("gun-level's", function () {
     });
 
 
-
-    // Only the first test will fulfill. The rest
-    // are never called, regardless of order.
-    xit('should allow several keys to point to the same data', function (done) {
+    it('should allow several keys to point to the same data', function (done) {
       gun.get('second key').path('prop').val(function (val) {
         expect(val).toBe('my context');
         done();
       });
     });
 
-    xit('should allow keys to point to entire graphs', function (done) {
+    pending('never fulfills', 'should allow keys to point to entire graphs', function (done) {
       gun.get('master').path('data').val(function (val) {
         expect(val).toBe('true');
         done();
@@ -184,9 +181,7 @@ describe("gun-level's", function () {
 
   describe('folder option', function () {
 
-    // If I try to test the default, I might overwrite
-    // real, existing data.
-    xit('should default to "./level/"', function () {
+    pending('This test is dangerous and may overwrite real, existing data. Manually change pending() to "it()" to run it.', 'REMOVE LAST DESCRIPTION: should default to "./level/"', function () {
       setup();
       expect(exists('./level')).toBe(true);
     });
