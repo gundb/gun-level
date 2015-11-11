@@ -16,7 +16,7 @@ function clean(path) {
   }
   if (fs.existsSync(path)) {
     fs.readdirSync(path).forEach(function (file, index) {
-      var curPath = path.replace(/\/$/, '') + "/" + file;
+      var curPath = path.replace(/\/*$/, '/') + file;
       if (fs.lstatSync(curPath).isDirectory()) {
         clean(curPath);
       } else {
@@ -182,7 +182,7 @@ describe("gun-level's", function () {
 
 
     it('should let you point to any folder', function () {
-      var folder = 'tomato-potato/';
+      var folder = 'tomato-potato';
       setup(folder).get('thing').set();
 
       expect(fs.existsSync(folder)).toBe(true);
