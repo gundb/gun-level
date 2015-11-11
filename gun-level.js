@@ -69,64 +69,95 @@ function setup(gun, opt) {
 
 
   // level instances can't share a database
-  // set it to the instance already using that path.
-  if (!folder[path]) {
-    blaze(path);
-
-    folder[path] = level = levelUP(path, {
-      valueEncoding: 'json'
-    });
+  // so let gun share a level instance
+  if (folder[path]) {
+    level = folder[path];
 
   } else {
-    level = folder[path];
+    blaze(path);
+
+    level = folder[path] = levelUP(path, {
+      valueEncoding: 'json'
+    });
   }
 
 
 
 
-  driver = {
-    get: function (key, cb, opt) {
+  function getSoul(soul, cb, opt, count) {
 
-      if (!key) {
+    level.get(soul, function (err, node) {
+      var graph = {},
+        soul = Gun.is.soul.on(node);
+
+      if (valid(err)) {
         return cb({
-          err: "No key was given to .get()"
+          err: err
         }, false);
       }
 
-      level.get(key, function (err, souls) {
-        var saved = 0,
-          pending = 0;
+      graph[soul] = node;
+      cb(null, graph);
 
-        if (!souls) {
-          cb(null, null);
-        }
+      graph[soul] = Gun.union.pseudo(soul);
+      cb(null, graph);
 
-        Gun.obj.map(souls, function (rel, soul) {
-          pending += 1;
+      count.found += 1;
+      if (count.requested === count.found) {
+        // terminate
+        cb(null, {});
+      }
+    });
+  }
 
-          level.get(soul, function (err, node) {
-            if (valid(err)) {
-              return cb({
-                err: err
-              }, false);
-            }
-            var graph = {},
-              soul = Gun.is.soul.on(node);
-            graph[soul] = node;
-            cb(null, graph || null);
-            graph = {};
-            graph[soul] = Gun.union.pseudo(soul);
-            cb(null, graph || null);
 
-            saved += 1;
-            if (pending === saved) {
-              cb(null, {});
-            }
-          });
-        });
+
+  function getKey(key, cb, opt, count) {
+
+    level.get(key, function (err, souls) {
+
+      if (!souls) {
+        cb(null, null);
+      }
+
+      // map over each soul in the graph
+      Gun.obj.map(souls, function (rel, soul) {
+        count.requested += 1;
+
+        // get that soul
+        getSoul(soul, cb, opt, count);
       });
+    });
+  }
+
+
+  driver = {
+    get: function (key, cb, opt) {
+      var soul;
+
+      if (!key) {
+        return cb({
+          err: "No data was given to .get()"
+        }, false);
+      }
+
+      soul = Gun.is.soul(key);
+      if (soul) {
+        getSoul(soul, cb, opt, {
+          requested: 1,
+          found: 0
+        });
+      } else {
+        // getKey depends on getSouls
+        getKey(key, cb, opt, {
+          requested: 0,
+          found: 0
+        });
+      }
 
     },
+
+
 
     put: function (graph, cb, opt) {
       var saved = 0,
@@ -136,7 +167,7 @@ function setup(gun, opt) {
         pending += 1;
         level.put(soul, node, function (err) {
           if (valid(err)) {
-            cb({
+            return cb({
               err: err
             }, false);
           }
@@ -148,6 +179,8 @@ function setup(gun, opt) {
       });
 
     },
+
+
 
     key: function (name, soul, cb) {
       if (!name) {
@@ -167,9 +200,10 @@ function setup(gun, opt) {
           }, false);
         }
         graph = graph || {};
-        graph[soul] = {
+        var relation = {
           '#': soul
         };
+        graph[soul] = relation;
         level.put(name, graph, function (err) {
           if (valid(err)) {
             return cb({
