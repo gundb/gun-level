@@ -1,8 +1,8 @@
 {
   "name": "gun-level",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "levelDB persistence layer for gun",
-  "main": "index.js",
+  "main": "gun-level.js",
   "scripts": {
     "test": "jasmine"
   },
