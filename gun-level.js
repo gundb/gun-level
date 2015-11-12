@@ -4,10 +4,8 @@
 var Gun = require('gun'),
   fs = require('fs'),
   levelUP = require('level'),
-  defaultFolder = 'level/';
-
-var folder = {};
-
+  defaultFolder = 'level/',
+  folder = {};
 
 function valid(err) {
   var noData = 'Key not found in database';
