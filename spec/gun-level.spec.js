@@ -4,10 +4,15 @@
 
 var Gun = require('../gun-level'),
   fs = require('fs'),
+  testedDefault = false,
   gun;
 
 
+
+
 var testFolder = 'spec/db-test/';
+
+
 
 
 function remove(path) {
@@ -22,9 +27,6 @@ function remove(path) {
       } else {
         fs.unlinkSync(curPath);
       }
-      if (index === 'CURRENT') {
-        fs.unlinkSync(curPath);
-      }
     });
     if (fs.existsSync(path)) {
       fs.rmdirSync(path);
@@ -33,13 +35,17 @@ function remove(path) {
   return null;
 }
 
+
+
 function setup(folder) {
   return new Gun({
     level: {
-      folder: testFolder + folder || null
-    }
+      folder: folder ? (testFolder + folder) : null
+    },
+    file: false
   });
 }
+
 
 function exists(folder) {
   return fs.existsSync(testFolder + folder);
@@ -47,6 +53,9 @@ function exists(folder) {
 
 afterAll(function () {
   remove(testFolder);
+  if (testedDefault) {
+    remove('level');
+  }
 });
 
 describe("gun-level's", function () {
@@ -58,6 +67,35 @@ describe("gun-level's", function () {
   });
 
 
+
+  describe('folder option', function () {
+
+    it('should let you point to any folder', function () {
+      var folder = 'tomato-potato';
+      setup(folder).get('thing').set();
+      expect(exists(folder)).toBe(true);
+    });
+
+    it('should allow paths at any depth', function () {
+      var folder = 'really/deep/path/';
+      setup(folder);
+      expect(exists(folder)).toBe(true);
+    });
+
+    it("shouldn't break with weird path names", function () {
+      setup('//super/weird-path/name...thing ///');
+      expect(exists('super/weird-path/name...thing /')).toBe(true);
+    });
+
+    if (!fs.existsSync('level')) {
+      it("should be optional", function () {
+        setup();
+        expect(fs.existsSync('level')).toBe(true);
+      });
+      testedDefault = true;
+    }
+
+  });
 
 
 
@@ -78,7 +116,7 @@ describe("gun-level's", function () {
       });
     });
 
-    it("shouldn't give an error for a generic put", function (done) {
+    it("should save data without returning an error", function (done) {
       gun.put({
         key: 'value'
       }, function (err) {
@@ -90,9 +128,18 @@ describe("gun-level's", function () {
     it("should invoke the callback after finishing", function (done) {
       gun.put({
         key: 'value'
-      }, function (err) {
-        expect(true).toBe(true);
-        done();
+      }, done);
+    });
+
+    it("should work with nested objects", function () {
+      gun.put({
+        obj: {
+          ect: {
+            prop: true
+          }
+        }
+      }).path('obj.ect.prop').val(function (val) {
+        expect(val).toBe(true);
       });
     });
 
@@ -108,7 +155,10 @@ describe("gun-level's", function () {
 
     beforeEach(function (done) {
       gun.path('get-test').put({
-        success: true
+        success: true,
+        object: {
+          prop: 'value'
+        }
       }).key('get-test-key', done);
     });
 
@@ -134,6 +184,14 @@ describe("gun-level's", function () {
       });
     });
 
+    it('should be able to find data by soul', function (done) {
+      // path uses souls under the hood
+      gun.get('get-test-key').path('object').path('prop').val(function (val) {
+        expect(val).toBe('value');
+        done();
+      });
+    });
+
   });
 
 
@@ -149,7 +207,7 @@ describe("gun-level's", function () {
 
       gun.path('to data').set().path('hidden obscurely').put({
         prop: 'my context'
-      }).key('first key').key('second key').key('master', done);
+      }).key('first key').key('second key', done);
     });
 
 
@@ -170,33 +228,11 @@ describe("gun-level's", function () {
       });
     });
 
-    pending('never fulfills', 'should allow keys to point to entire graphs', function (done) {
+    it('should allow keys to point to entire graphs', function (done) {
       gun.get('master').path('data').val(function (val) {
-        expect(val).toBe('true');
+        expect(val).toBe(true);
         done();
       });
-    });
-
-  });
-
-  describe('folder option', function () {
-
-    pending('This test is dangerous and may overwrite real, existing data. Manually change pending() to "it()" to run it.', 'REMOVE LAST DESCRIPTION: should default to "./level/"', function () {
-      setup();
-      expect(exists('./level')).toBe(true);
-    });
-
-    it('should let you point to any folder', function () {
-      var folder = 'tomato-potato';
-      setup(folder).get('thing').set();
-
-      expect(exists(folder)).toBe(true);
-    });
-
-    it('should allow paths at any depth', function () {
-      var folder = 'really/deep/path/';
-      setup(folder);
-      expect(exists(folder)).toBe(true);
     });
 
   });
