@@ -1,11 +1,16 @@
 /*jslint node: true, nomen: true */
 'use strict';
 
-var Gun = require('gun'),
-  fs = require('fs'),
-  levelUP = require('level'),
-  defaultFolder = 'level/',
-  folder = {};
+var Gun, fs, folder, levelUP, defaultFolder = 'level/';
+Gun = require('gun/gun');
+require('gun/lib/wsp');
+fs = require('fs');
+levelUP = require('level');
+folder = {};
+
+console.log('Thanks for using gun-level!');
+console.log('Submit any issues to: github.com/PsychoLlama/gun-level');
+console.log('or ask us a question: gitter.im/amark\n');
 
 function valid(err) {
   var noData = 'Key not found in database';
