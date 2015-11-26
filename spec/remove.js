@@ -1,4 +1,7 @@
 /*jslint node: true*/
+// Adapted from:
+// http://www.geedew.com/remove-a-directory-that-is-not-empty-in-nodejs/
+// because I'm horrible with fs
 'use strict';
 var fs = require('fs');
 

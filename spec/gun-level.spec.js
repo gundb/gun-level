@@ -2,13 +2,12 @@
 /*globals describe, it, pending, expect, beforeEach, afterAll */
 'use strict';
 
-var gun, Gun, remove, fs, testedDefault;
+var Gun, remove, fs, testFolder, testedDefault = false;
+testFolder = require('./folder');
 Gun = require('../gun-level');
 remove = require('./remove');
-testedDefault = false;
 fs = require('fs');
 
-var testFolder = require('./folder');
 
 function setup(path) {
 	return new Gun({
@@ -38,6 +37,7 @@ var spec = require('gun-module-spec');
 
 
 describe("gun-level", function () {
+	var gun;
 
 	// Fresh instance each test
 	beforeEach(function (done) {
