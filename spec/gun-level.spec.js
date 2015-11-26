@@ -2,12 +2,13 @@
 /*globals describe, it, pending, expect, beforeEach, afterAll */
 'use strict';
 
-var gun, Gun = require('../gun-level'),
-	remove = require('./remove'),
-	fs = require('fs'),
-	testedDefault = false;
+var gun, Gun, remove, fs, testedDefault;
+Gun = require('../gun-level');
+remove = require('./remove');
+testedDefault = false;
+fs = require('fs');
 
-var testFolder = 'spec/db-test/';
+var testFolder = require('./folder');
 
 function setup(path) {
 	return new Gun({
@@ -59,7 +60,7 @@ describe("gun-level", function () {
 	});
 
 	it('should allow you to point two instances to the same path', function () {
-		var two = setup('spec/db-test-path/').get('test').set();
+		var two = setup('/').get('test').set();
 		two.path('name').put('test');
 		gun.path('name').put('test').val(function (one) {
 			two.path('name').val(function (two) {
@@ -92,7 +93,7 @@ describe("gun-level", function () {
 
 		if (!fs.existsSync('level')) {
 			it("should be optional", function () {
-				setup();
+				setup(null);
 				expect(fs.existsSync('level')).toBe(true);
 			});
 			testedDefault = true;
@@ -243,8 +244,5 @@ describe("gun-level", function () {
 
 // the gun module specification
 describe('The gun-level', spec({
-	module: new Gun({
-		blaze: testFolder,
-		share: true
-	})
+	module: setup('/')
 }));

@@ -31,8 +31,10 @@ Gun.on('opt').event(function (gun, config) {
 	// a levelDown instance
 	if (level.db) {
 		driver = level.db;
-	} else if (shared[path] && level.share) {
+
+	} else if (level.share && shared[path]) {
 		driver = shared[path];
+
 	} else {
 		if (level.blaze) {
 			blaze(path);

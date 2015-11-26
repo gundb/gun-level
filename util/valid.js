@@ -5,7 +5,7 @@ module.exports = function (err) {
 
 	var noData = 'Key not found in database';
 
-	if (!err) {
+	if (!err || !err.message) {
 		return false;
 	}
 	if (err.message.match(noData)) {

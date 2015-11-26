@@ -54,10 +54,12 @@ module.exports = {
 			opt.level.path = opt.level.blaze;
 			opt.level.blaze = true;
 		}
+		if (opt.level.blaze === true || typeof opt.level.blaze === 'string') {
+			when(opt.level, 'share').is('undefined').set(true);
+		}
 
 		when(opt.level, 'share').is('undefined').set(false);
 
-		unless(opt.level, 'db').set(null);
 		unless(opt.level, 'down').set({});
 		unless(opt.level, 'blaze').set(false);
 		unless(opt.level, 'path').set('level/');
