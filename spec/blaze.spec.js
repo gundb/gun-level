@@ -1,10 +1,11 @@
 /*globals describe, it, pending, expect, beforeEach, afterAll, jasmine */
-/*jslint node: true */
+/*jslint node: true, nomen: true */
 'use strict';
 
 var fs = require('fs');
 var blazer = require('../util/blaze');
 var testFolder = require('./folder');
+var remove = require('./remove');
 
 function blaze(path) {
 	return blazer(testFolder + path);
@@ -24,6 +25,14 @@ describe('The path-blazer', function () {
 		blazer(rootPath);
 
 		expect(fs.existsSync(rootPath)).toBe(true);
+	});
+
+	it('should be able to handle project-relative paths', function () {
+		var path = 'project-blaze';
+		blazer(path, __dirname);
+
+		expect(fs.existsSync(__dirname + '/' + path)).toBe(true);
+		remove(__dirname + '/' + path);
 	});
 
 	it('should be able to build a single folder', function () {

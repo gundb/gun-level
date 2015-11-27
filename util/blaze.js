@@ -27,12 +27,13 @@ function build(root, path, depth) {
 	return build(root, path, depth);
 }
 
-module.exports = function (string) {
+module.exports = function (string, dir) {
 	var resource, path, file, root;
 	if (!string || !string.length || !fs) {
 		return;
 	}
-	resource = filePath(__dirname, string);
+	dir = dir || process.cwd();
+	resource = filePath(dir, string);
 	root = resource.root;
 	path = resource.path;
 	file = resource.file;
