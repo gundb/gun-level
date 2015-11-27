@@ -1,7 +1,8 @@
 /*jslint node: true, nomen: true */
 'use strict';
 
-var fs;
+var fs,
+	filePath = require('./file-path');
 
 try {
 	fs = require('fs');
@@ -12,15 +13,6 @@ try {
 	}
 } catch (e) {
 	fs = null;
-}
-
-function isFile(path) {
-	var file = path[path.length - 1];
-	if (file.match(/\w+\.\w+$/)) {
-		return path.join('/');
-	} else {
-		return false;
-	}
 }
 
 function build(root, path, depth) {
@@ -36,26 +28,15 @@ function build(root, path, depth) {
 }
 
 module.exports = function (string) {
-	var path, file, root;
+	var resource, path, file, root;
 	if (!string || !string.length || !fs) {
 		return;
 	}
-	path = string.split('/').filter(function (dir) {
-		return !!dir;
-	});
+	resource = filePath(__dirname, string);
+	root = resource.root;
+	path = resource.path;
+	file = resource.file;
 
-	if (string.charAt(0) === '/') {
-		root = [''];
-	} else {
-		root = __dirname.split('/').filter(function (dir) {
-			return !!dir;
-		});
-		root.unshift('');
-	}
-	file = isFile(root.concat(path));
-	if (file) {
-		path.pop();
-	}
 	path = build(root, path, []);
 	if (file && !fs.existsSync(file)) {
 		fs.closeSync(fs.openSync(file, 'w'));
