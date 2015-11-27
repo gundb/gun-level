@@ -5,6 +5,7 @@
 var patch = require('../util/patch');
 
 describe('The level-patcher', function () {
+	var warn;
 
 	it('should be able to handle no input', function () {
 		expect(patch.level()).toEqual(jasmine.any(Object));
@@ -34,6 +35,34 @@ describe('The level-patcher', function () {
 		});
 		expect(level.path).toBe('or not toBe');
 	});
+
+
+	warn = console.warn;
+
+	it('should warn that "folder" is deprecated', function () {
+		var warned = false;
+		console.warn = function () {
+			warned = true;
+		};
+		patch.level({
+			level: {
+				folder: 'old implementation'
+			}
+		});
+		expect(warned).toBe(true);
+	});
+
+	it('should ensure that "folder" is undefined', function () {
+		var level = patch.level({
+			level: {
+				folder: 'old implementation'
+			}
+		});
+		expect(level.folder).toBe(undefined);
+	});
+
+	console.warn = warn;
+
 
 	it('should default blaze to false when blaze is not set', function () {
 		var level = patch.level({
@@ -74,12 +103,17 @@ describe('The level-patcher', function () {
 	it('should take a "db" option', function () {
 		var level = patch.level({
 			level: {
-				db: function () {
-					return true;
+				db: {
+					test: true
 				}
 			}
 		});
-		expect(level.db()).toBe(true);
+		expect(level.db.test).toBe(true);
+	});
+
+	it('should default "db" to null', function () {
+		var level = patch.level();
+		expect(level.db).toBe(null);
 	});
 
 	it('should take an "up" option', function () {

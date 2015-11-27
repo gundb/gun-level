@@ -16,7 +16,14 @@ function exists(path) {
 describe('The path-blazer', function () {
 
 	it("shouldn't die without input", function () {
-		blazer();
+		expect(blazer).not.toThrow();
+	});
+
+	it('should be able to handle root-relative paths', function () {
+		var rootPath = testFolder + 'root-blaze';
+		blazer(rootPath);
+
+		expect(fs.existsSync(rootPath)).toBe(true);
 	});
 
 	it('should be able to build a single folder', function () {

@@ -32,6 +32,27 @@ function unless(obj, prop) {
 	};
 }
 
+// patch single-condition options
+function patch(opt) {
+	unless(opt.level, 'db').set(null);
+	unless(opt.level, 'down').set({});
+	unless(opt.level, 'blaze').set(false);
+	unless(opt.level, 'path').set('level/');
+	unless(opt.level, 'up').set(require('levelup'));
+	unless(opt.level.down, 'valueEncoding').set('json');
+	return opt;
+}
+
+// handle deprecated options
+function findDeprecated(opt) {
+	if (typeof opt.level.folder !== 'undefined') {
+		opt.level.path = opt.level.folder;
+		opt.level.folder = undefined;
+		console.warn('\tThe gun-level "folder" option has been deprecated.');
+		console.warn('\tUse "path" or "blaze" instead.\n');
+	}
+	return opt;
+}
 
 module.exports = {
 	level: function (opt, level) {
@@ -44,32 +65,39 @@ module.exports = {
 		}
 
 		unless(opt, 'level').set({});
+
+		// level wasn't defined. We're flying blind.
 		when(opt, 'level').isnt('object').set({
 			share: true
 		});
+
+		// the user wants to use a db module
 		when(opt.level, 'down').is('function').set({
 			db: opt.level.down
 		});
+
+		// the user wants to blaze a path
 		if (typeof opt.level.blaze === 'string') {
 			opt.level.path = opt.level.blaze;
 			opt.level.blaze = true;
 		}
-		if (opt.level.blaze === true || typeof opt.level.blaze === 'string') {
-			when(opt.level, 'share').is('undefined').set(true);
+
+		// define default share settings
+		var sharing = when(opt.level, 'share').is('undefined').set;
+		if (opt.level.blaze === true) {
+			sharing(true);
 		}
+		sharing(false);
 
-		when(opt.level, 'share').is('undefined').set(false);
+		// handle deprecated options
+		findDeprecated(opt);
 
-		unless(opt.level, 'down').set({});
-		unless(opt.level, 'blaze').set(false);
-		unless(opt.level, 'path').set('level/');
-		unless(opt.level, 'up').set(require('levelup'));
-		unless(opt.level.down, 'valueEncoding').set('json');
-
-		return opt.level;
+		// set the minor defaults
+		return patch(opt).level;
 	},
 
 	hooks: function (opt, level) {
+		// grab the corresponding method name
 		function driver(name) {
 			return require('../driver/' + name)(level);
 		}

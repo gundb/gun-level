@@ -1,2 +1,2 @@
-/*jslint node: true */
-module.exports = 'spec/test-folder/';
+/*jslint node: true, nomen: true */
+module.exports = __dirname + '/test-folder/';

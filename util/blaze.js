@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint node: true, nomen: true */
 'use strict';
 
 var fs;
@@ -23,31 +23,40 @@ function isFile(path) {
 	}
 }
 
-function build(path, depth) {
+function build(root, path, depth) {
 	if (!path.length) {
 		return depth;
 	}
 	depth.push(path.shift());
-	var folder = depth.join('/');
+	var folder = root.concat(depth).join('/');
 	if (!fs.existsSync(folder)) {
 		fs.mkdirSync(folder);
 	}
-	return build(path, depth);
+	return build(root, path, depth);
 }
 
-module.exports = function (path) {
-	if (!path || !path.length || !fs) {
+module.exports = function (string) {
+	var path, file, root;
+	if (!string || !string.length || !fs) {
 		return;
 	}
-	path = path.split('/').filter(function (dir) {
+	path = string.split('/').filter(function (dir) {
 		return !!dir;
 	});
-	var file = isFile(path);
+
+	if (string.charAt(0) === '/') {
+		root = [''];
+	} else {
+		root = __dirname.split('/').filter(function (dir) {
+			return !!dir;
+		});
+		root.unshift('');
+	}
+	file = isFile(root.concat(path));
 	if (file) {
 		path.pop();
 	}
-
-	path = build(path, []);
+	path = build(root, path, []);
 	if (file && !fs.existsSync(file)) {
 		fs.closeSync(fs.openSync(file, 'w'));
 	}
