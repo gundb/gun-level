@@ -1,8 +1,9 @@
 /*jslint node: true, nomen: true */
 'use strict';
 
-var fs,
-	filePath = require('./file-path');
+var path, format, fs;
+path = require('./file-path');
+format = require('path');
 
 try {
 	fs = require('fs');
@@ -15,32 +16,34 @@ try {
 	fs = null;
 }
 
-function build(root, path, depth) {
-	if (!path.length) {
+function build(dir, depth) {
+	var folder, segment;
+	if (!dir.length) {
 		return depth;
 	}
-	depth.push(path.shift());
-	var folder = root.concat(depth).join('/');
+	depth.push(segment = dir.shift());
+	if (!segment) {
+		return build(dir, depth);
+	}
+	folder = depth.join(format.sep);
+
 	if (!fs.existsSync(folder)) {
 		fs.mkdirSync(folder);
 	}
-	return build(root, path, depth);
+	return build(dir, depth);
 }
 
-module.exports = function (string, dir) {
-	var resource, path, file, root;
+module.exports = function (string) {
 	if (!string || !string.length || !fs) {
 		return;
 	}
-	dir = dir || process.cwd();
-	resource = filePath(dir, string);
-	root = resource.root;
-	path = resource.path;
-	file = resource.file;
+	var source, route = path(string);
 
-	path = build(root, path, []);
-	if (file && !fs.existsSync(file)) {
-		fs.closeSync(fs.openSync(file, 'w'));
+	build(route.path, []);
+
+	if (route.file && !fs.existsSync(route.file)) {
+		source = fs.openSync(route.file, 'w');
+		fs.closeSync(source);
 	}
-	return file || path.join('/');
+	return route.file || format.sep + route.path.join(format.sep);
 };

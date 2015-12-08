@@ -6,12 +6,17 @@ var fs = require('fs');
 var blazer = require('../util/blaze');
 var testFolder = require('./folder');
 var remove = require('./remove');
+var format = require('path');
 
 function blaze(path) {
-	return blazer(testFolder + path);
+	var dest = path.split('/');
+	dest = format.join.apply(format, [testFolder].concat(dest));
+	blazer(dest);
+	return dest;
 }
 function exists(path) {
-	return fs.existsSync(testFolder + path);
+	var dest = format.join(testFolder, path);
+	return fs.existsSync(dest);
 }
 
 describe('The path-blazer', function () {
@@ -21,7 +26,7 @@ describe('The path-blazer', function () {
 	});
 
 	it('should be able to handle root-relative paths', function () {
-		var rootPath = testFolder + 'root-blaze';
+		var rootPath = format.join(testFolder, 'root-blaze');
 		blazer(rootPath);
 
 		expect(fs.existsSync(rootPath)).toBe(true);
@@ -29,10 +34,10 @@ describe('The path-blazer', function () {
 
 	it('should be able to handle project-relative paths', function () {
 		var path = 'project-blaze';
-		blazer(path, __dirname);
+		blazer(path);
 
-		expect(fs.existsSync(__dirname + '/' + path)).toBe(true);
-		remove(__dirname + '/' + path);
+		expect(fs.existsSync(path)).toBe(true);
+		remove(path);
 	});
 
 	it('should be able to build a single folder', function () {
@@ -53,14 +58,14 @@ describe('The path-blazer', function () {
 	});
 
 	it('should be able to blaze a path to a new file', function () {
-		var file = 'create/path/to/the.file';
+		var file = format.join('create/path/to/the.file');
 		blaze(file);
 		expect(exists(file)).toBe(true);
 	});
 
 	it('should return the full path it blazed', function () {
-		var path = 'folder/file.name',
-			fileName = testFolder + 'folder/file.name';
+		var fileName, path = 'folder/file.name';
+		fileName = format.join(testFolder, 'folder', 'file.name');
 		expect(blaze(path)).toBe(fileName);
 	});
 

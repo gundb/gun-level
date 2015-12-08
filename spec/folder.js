@@ -1,2 +1,3 @@
 /*jslint node: true, nomen: true */
-module.exports = __dirname + '/test-folder/';
+var path = require('path');
+module.exports = path.join(__dirname, 'test-folder' + path.sep);

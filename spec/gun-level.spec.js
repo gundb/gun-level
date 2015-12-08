@@ -2,17 +2,24 @@
 /*jslint node: true */
 'use strict';
 
-var Gun, remove, fs, testFolder, testedDefault = false;
+var Gun, remove, format, fs, testFolder, testedDefault = false;
 testFolder = require('./folder');
 Gun = require('../gun-level');
 remove = require('./remove');
+format = require('path');
 fs = require('fs');
 
 
 function setup(path) {
+	var depth, dest;
+	if (path !== undefined) {
+		depth = path.split('/').join(format.sep);
+		dest = format.join(testFolder, depth);
+	}
+
 	return new Gun({
 		level: {
-			blaze: (path || path === '') ? (testFolder + path) : '',
+			blaze: (path || path === '') ? dest : '',
 			share: true
 		}
 	});

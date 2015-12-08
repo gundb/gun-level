@@ -1,41 +1,32 @@
 /*jslint node: true, nomen: true */
 'use strict';
+var path = require('path');
 
-function isFile(path) {
-	var file = path[path.length - 1];
+function hasFile(dir) {
+	var file = dir[dir.length - 1];
 	if (file.match(/\w+\.\w+$/)) {
-		return path.join('/');
+		return dir.join(path.sep);
 	} else {
 		return false;
 	}
 }
 
-function truthy(dir) {
-	return !!dir;
-}
-
-
-module.exports = function (root, string) {
-	if (!string || !string.length) {
+module.exports = function (string) {
+	var root, dir, file;
+	if (!string) {
 		return;
 	}
-	if (string.charAt(0) === '/' && string.match(root)) {
-		string = string.replace(root, '');
-	} else if (string.charAt(0) === '/') {
-		root = '';
-	}
-	root = root.split('/').filter(truthy);
-	root.unshift('');
 
-	var path = string.split('/').filter(truthy),
-		file = isFile(root.concat(path));
+	root = path.resolve(string);
+	dir = root.split(path.sep);
+
+	file = hasFile(dir);
 
 	if (file) {
-		path.pop();
+		dir.pop();
 	}
 	return {
 		file: file,
-		root: root,
-		path: path
+		path: dir
 	};
 };
