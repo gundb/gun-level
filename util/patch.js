@@ -61,7 +61,7 @@ module.exports = {
 
 		if (opt.level === false) {
 			// return if level is disabled
-			return opt;
+			return opt.level;
 		}
 
 		unless(opt, 'level').set({});

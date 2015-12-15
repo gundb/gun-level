@@ -17,7 +17,7 @@ describe('The level-patcher', function () {
 			var opt = patch.level({
 				level: false
 			});
-			expect(opt.level).toEqual(false);
+			expect(opt).toEqual(false);
 		});
 
 	it('should set the default path to "level/"', function () {
