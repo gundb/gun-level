@@ -11,7 +11,7 @@ blaze = require('./util/blaze');
 
 console.log('Thanks for using gun-level!');
 console.log('Submit any issues to: github.com/PsychoLlama/gun-level');
-console.log('or ask us a question: gitter.im/amark\n');
+console.log('or ask us a question: gitter.im/amark/gun\n');
 
 
 
