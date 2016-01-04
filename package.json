@@ -13,6 +13,10 @@
     "level",
     "driver"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PsychoLlama/gun-level.git"
+  },
   "author": "Jesse Gibson",
   "license": "MIT",
   "dependencies": {
@@ -22,6 +26,6 @@
   },
   "devDependencies": {
     "gun-module-spec": "^2.0.0",
-    "jasmine": "^2.3.2"
+    "jasmine": "^2.4.1"
   }
 }
