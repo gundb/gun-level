@@ -6,7 +6,7 @@ var Gun, fs, patch, blaze, shared = {};
 module.exports = Gun = require('gun/gun');
 patch = require('./util/patch');
 blaze = require('./util/blaze');
-
+require('./gun.set');
 
 
 console.log('Thanks for using gun-level!');
@@ -47,7 +47,7 @@ Gun.on('opt').event(function (gun, config) {
 		}
 	}
 
-	hooks = patch.hooks(config, driver);
+	hooks = patch.wire(config, driver);
 
 
 	gun.opt(hooks, true);

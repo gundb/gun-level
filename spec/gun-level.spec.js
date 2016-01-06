@@ -1,4 +1,4 @@
-/*globals describe, it, pending, expect, beforeEach, afterAll */
+/*globals describe, it, pending, expect, beforeEach, afterAll, jasmine */
 /*jslint node: true */
 'use strict';
 
@@ -8,6 +8,7 @@ Gun = require('../gun-level');
 remove = require('./remove');
 format = require('path');
 fs = require('fs');
+
 
 
 function setup(path) {
@@ -45,6 +46,8 @@ var spec = require('gun-module-spec');
 
 describe("gun-level", function () {
 	var gun;
+
+	jasmine.DEFAULT_TIMEOUT_INTERVAL = 300;
 
 	// Fresh instance each test
 	beforeEach(function (done) {
@@ -207,6 +210,7 @@ describe("gun-level", function () {
 
 	describe('key method', function () {
 
+		// this is all failing
 		beforeEach(function (done) {
 			gun.path('to more data').put({
 				data: true

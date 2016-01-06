@@ -192,54 +192,49 @@ describe('The level-patcher', function () {
 
 
 
-describe('The hook-patcher', function () {
+describe('The wire-patcher', function () {
 
 	it('should be able to handle no input', function () {
-		var opt = patch.hooks();
+		var opt = patch.wire();
 		expect(opt).toEqual(jasmine.any(Object));
 	});
 
 	it('should return the hooks inside an otherwise empty object', function () {
-		var key, opt = patch.hooks();
+		var key, opt = patch.wire();
 		for (key in opt) {
 			if (opt.hasOwnProperty(key)) {
-				expect(key).toBe('hooks');
+				expect(key).toBe('wire');
 				expect(opt[key]).toEqual(jasmine.any(Object));
 			}
 		}
 	});
 
 	it('should not overwrite existing hooks', function () {
-		var opt = patch.hooks({
-			hooks: {
-				get: true,
-				put: true,
-				key: true
-			}
-		});
-		expect(opt.hooks.get).toBe(true);
-		expect(opt.hooks.put).toBe(true);
-		expect(opt.hooks.key).toBe(true);
-	});
-
-	it('should only overwrite undefined hooks', function () {
-		var opt = patch.hooks({
-			hooks: {
+		var opt = patch.wire({
+			wire: {
 				get: true,
 				put: true
 			}
 		});
-		expect(opt.hooks.get).toBe(true);
-		expect(opt.hooks.put).toBe(true);
-		expect(opt.hooks.key).toEqual(jasmine.any(Function));
+		expect(opt.wire.get).toBe(true);
+		expect(opt.wire.put).toBe(true);
+	});
+
+	it('should only overwrite undefined hooks', function () {
+		var opt = patch.wire({
+			wire: {
+				get: true
+			}
+		});
+		expect(opt.wire.get).toBe(true);
+		expect(opt.wire.put).toEqual(jasmine.any(Function));
 	});
 
 	it('should patch every undefined hook', function () {
-		var opt = patch.hooks({
-			hooks: {}
+		var opt = patch.wire({
+			wire: {}
 		});
-		expect(opt.hooks.get).toEqual(jasmine.any(Function));
-		expect(opt.hooks.put).toEqual(jasmine.any(Function));
-		expect(opt.hooks.key).toEqual(jasmine.any(Function));
+		expect(opt.wire.get).toEqual(jasmine.any(Function));
+		expect(opt.wire.put).toEqual(jasmine.any(Function));
 	});
 });
