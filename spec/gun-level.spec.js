@@ -51,7 +51,7 @@ describe("gun-level", function () {
 
 	// Fresh instance each test
 	beforeEach(function (done) {
-		gun = setup('').get('test').set();
+		gun = setup('').get('test');
 		done();
 	});
 
@@ -83,7 +83,7 @@ describe("gun-level", function () {
 
 		it('should let you point to any path', function () {
 			var path = 'tomato-potato';
-			setup(path).get('thing').set();
+			setup(path).get('thing');
 			expect(exists(path)).toBe(true);
 		});
 
@@ -216,7 +216,7 @@ describe("gun-level", function () {
 				data: true
 			}).key('master');
 
-			gun.path('to data').set().path('hidden obscurely').put({
+			gun.path('to data').path('hidden obscurely').put({
 				prop: 'my context'
 			}).key('first key').key('second key', done);
 		});
@@ -252,6 +252,6 @@ describe("gun-level", function () {
 
 
 // the gun module specification
-describe('The gun-level', spec({
+describe('Module spec', spec({
 	module: setup('')
 }));
