@@ -40,10 +40,6 @@ afterAll(function () {
 
 
 
-var spec = require('gun-module-spec');
-
-
-
 describe("gun-level", function () {
 	var gun;
 
@@ -251,7 +247,13 @@ describe("gun-level", function () {
 });
 
 
+
 // the gun module specification
-describe('Module spec', spec({
-	module: setup('')
-}));
+var spec = require('gun-module-spec');
+
+spec('Module spec', Gun, {
+	level: {
+		blaze: testFolder,
+		share: true
+	}
+});

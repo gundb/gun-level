@@ -6,7 +6,6 @@ var Gun, fs, patch, blaze, shared = {};
 module.exports = Gun = require('gun/gun');
 patch = require('./util/patch');
 blaze = require('./util/blaze');
-require('./gun.set');
 
 
 console.log('Thanks for using gun-level!');
