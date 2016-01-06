@@ -43,7 +43,7 @@ afterAll(function () {
 describe("gun-level", function () {
 	var gun;
 
-	jasmine.DEFAULT_TIMEOUT_INTERVAL = 300;
+	jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
 
 	// Fresh instance each test
 	beforeEach(function (done) {
