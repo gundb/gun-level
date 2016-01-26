@@ -206,7 +206,6 @@ describe("gun-level", function () {
 
 	describe('key method', function () {
 
-		// this is all failing
 		beforeEach(function (done) {
 			gun.path('to more data').put({
 				data: true
