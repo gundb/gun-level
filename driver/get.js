@@ -7,7 +7,9 @@ var valid = require('../util/valid');
 
 module.exports = function (level) {
 
-	return function get(soul, cb, opt) {
+
+	return function get(query, cb, opt) {
+    var soul = query[Gun._.soul];
 		level.get(soul, function (err, node) {
 			var rel;
 
