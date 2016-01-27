@@ -9,7 +9,7 @@ remove = require('./remove');
 format = require('path');
 fs = require('fs');
 
-
+Gun.log.squelch = true;
 
 function setup(path) {
   var depth, dest;
