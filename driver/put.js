@@ -1,28 +1,58 @@
 /*jslint node: true */
 'use strict';
-var valid = require('../util/valid');
-var error = require('../util/error');
-var Gun = require('gun/gun');
+var Gun, error, empty;
+error = require('../util/error');
+Gun = require('gun/gun');
+empty = function () {};
 
+function merger(vertex, field, val, state) {
+  Gun.is.node.state.ify(
+    [vertex],
+    field,
+    val,
+    state
+  );
+}
 
 module.exports = function (level) {
-	return function (graph, cb, opt) {
-		var saved = 0,
-			pending = 0;
+  return function put(graph, cb, opt) {
+    var ops = [];
 
-		Gun.is.graph(graph, function (node, soul) {
-			pending += 1;
-			level.put(soul, node, function (err) {
-				if (valid(err)) {
-					return error(cb)(err);
-				}
-				saved += 1;
-				if (pending === saved) {
-					cb(null, {
-						ok: true
-					});
-				}
-			});
-		});
-	};
+    Gun.is.graph(graph, function (node, soul) {
+      ops.push({
+        key: soul,
+        value: node
+      });
+    });
+
+    ops.forEach(function (op, index) {
+
+      level.get(op.key, function (err, found) {
+        if (found) {
+          // merge the nodes together
+          Gun.union.HAM(
+            op.value,
+            found,
+            empty,
+            merger,
+            empty
+          );
+        }
+
+        level.put(op.key, op.value, function (err) {
+          if (err) {
+            return error(cb)(err.message);
+          }
+          if (index === ops.length - 1) {
+            cb(null, {
+              ok: true
+            });
+          }
+        });
+
+      });
+
+    });
+
+  };
 };

@@ -2,3 +2,5 @@
 /node_modules/
 /db/
 .DS_Store
+spec/test-folder/
+level/

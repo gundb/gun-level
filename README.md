@@ -1,6 +1,6 @@
 # gun-level
 
-[![Travis](https://img.shields.io/travis/PsychoLlama/gun-level.svg?style=flat-square)](https://travis-ci.org/PsychoLlama/gun-level)
+[![Travis](https://img.shields.io/travis/PsychoLlama/gun-level/master.svg?style=flat-square)](https://travis-ci.org/PsychoLlama/gun-level/branches)
 [![npm](https://img.shields.io/npm/dt/gun-level.svg?style=flat-square)](https://www.npmjs.com/package/gun-level)
 [![Gitter](https://img.shields.io/gitter/room/amark/gun.svg?style=flat-square)](https://gitter.im/amark/gun)
 

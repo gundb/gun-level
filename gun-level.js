@@ -8,10 +8,9 @@ patch = require('./util/patch');
 blaze = require('./util/blaze');
 
 
-
 console.log('Thanks for using gun-level!');
 console.log('Submit any issues to: github.com/PsychoLlama/gun-level');
-console.log('or ask us a question: gitter.im/amark\n');
+console.log('or ask us a question: gitter.im/amark/gun\n');
 
 
 
@@ -47,7 +46,7 @@ Gun.on('opt').event(function (gun, config) {
 		}
 	}
 
-	hooks = patch.hooks(config, driver);
+	hooks = patch.wire(config, driver);
 
 
 	gun.opt(hooks, true);

@@ -48,7 +48,8 @@ function findDeprecated(opt) {
 	if (typeof opt.level.folder !== 'undefined') {
 		opt.level.path = opt.level.folder;
 		opt.level.folder = undefined;
-		console.warn('\tThe gun-level "folder" option has been deprecated.');
+		console.warn('\tThe gun-level "folder"' +
+			'option has been deprecated.');
 		console.warn('\tUse "path" or "blaze" instead.\n');
 	}
 	return opt;
@@ -96,7 +97,7 @@ module.exports = {
 		return patch(opt).level;
 	},
 
-	hooks: function (opt, level) {
+	wire: function (opt, level) {
 		// grab the corresponding method name
 		function driver(name) {
 			return require('../driver/' + name)(level);
@@ -104,13 +105,12 @@ module.exports = {
 
 		opt = opt || {};
 
-		unless(opt, 'hooks').set({});
-		unless(opt.hooks, 'get').set(driver('get'));
-		unless(opt.hooks, 'put').set(driver('put'));
-		unless(opt.hooks, 'key').set(driver('key'));
+		unless(opt, 'wire').set({});
+		unless(opt.wire, 'get').set(driver('get'));
+		unless(opt.wire, 'put').set(driver('put'));
 
 		return {
-			hooks: opt.hooks
+			wire: opt.wire
 		};
 	}
 };
