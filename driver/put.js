@@ -1,8 +1,9 @@
 /*jslint node: true */
 'use strict';
-var Gun, error;
+var Gun, error, empty;
 error = require('../util/error');
 Gun = require('gun/gun');
+empty = function () {};
 
 function merger(vertex, field, val, state) {
   Gun.is.node.state.ify(
@@ -15,8 +16,7 @@ function merger(vertex, field, val, state) {
 
 module.exports = function (level) {
   return function put(graph, cb, opt) {
-    var empty, ops = [];
-    empty = function () {};
+    var ops = [];
 
     Gun.is.graph(graph, function (node, soul) {
       ops.push({
