@@ -8,9 +8,9 @@ import {
 } from 'mocha';
 import expect, { spyOn } from 'expect';
 import Adapter from './';
-const levelup = require('levelup');
-const memdown = require('memdown');
-const Gun = require('gun/gun');
+import levelup from 'levelup';
+import memdown from 'memdown';
+import Gun from 'gun/gun';
 
 describe('An adapter', function () {
 

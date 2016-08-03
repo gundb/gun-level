@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha src/ --opts ./mocha.opts",
+    "lint": "eslint src/",
     "build": "babel src/ -d dist/",
     "prepublish": "npm run build"
   },

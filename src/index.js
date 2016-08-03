@@ -1,6 +1,6 @@
 /* eslint-disable id-length*/
 import Adapter from './Adapter';
-const Gun = require('gun/gun');
+import Gun from 'gun/gun';
 
 Gun.on('opt').event((gun, options) => {
 	const { level } = options;
@@ -24,4 +24,4 @@ Gun.on('opt').event((gun, options) => {
 
 });
 
-module.exports = Gun.default = Gun;
+module.exports = Gun;
