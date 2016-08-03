@@ -46,4 +46,17 @@ describe('Gun using level', function () {
 		});
 	});
 
+	it('should resolve circular references', (done) => {
+		const bob = gun.get('bob').put({ name: 'Bob' });
+		const dave = gun.get('dave').put({ name: 'Dave' });
+
+		bob.path('friend').put(dave);
+		dave.path('friend').put(bob);
+
+		bob.path('friend.friend.name').val((name) => {
+			expect(name).toBe('Bob');
+			done();
+		});
+	});
+
 });

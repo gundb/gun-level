@@ -1,6 +1,7 @@
 /* eslint-disable id-length*/
 import Gun from 'gun/gun';
 import union from '../union';
+const writing = Symbol('In-process writes');
 const options = {
 	valueEncoding: 'json',
 };
@@ -54,7 +55,7 @@ export default class Adapter {
 		this.write = this.write.bind(this);
 
 		// In-process writes.
-		this.writing = {};
+		level[writing] = level[writing] || {};
 	}
 
 	/**
@@ -68,7 +69,7 @@ export default class Adapter {
 		const { level } = this;
 		const { '#': key } = query;
 
-		const value = this.writing[key];
+		const value = level[writing][key];
 		if (value) {
 			return done(cb, value);
 		}
@@ -104,7 +105,6 @@ export default class Adapter {
 	 */
 	write (graph, cb) {
 		const { level } = this;
-		const adapter = this;
 
 		// Create a new batch write.
 		const batch = level.batch();
@@ -122,7 +122,7 @@ export default class Adapter {
 
 			// Remove the in-process writes.
 			keys.forEach((key) => {
-				delete adapter.writing[key];
+				delete level[writing][key];
 			});
 
 			// Report whether it succeeded.
@@ -155,11 +155,11 @@ export default class Adapter {
 		// Each node in the graph...
 		keys.forEach((uid) => {
 			const node = graph[uid];
-			const writing = this.writing[uid];
+			const value = level[writing][uid];
 
 			// Check to see if it's in the process of writing.
-			if (writing) {
-				union(node, writing);
+			if (value) {
+				union(node, value);
 				merged += 1;
 				batch.put(uid, node, options);
 
@@ -167,7 +167,7 @@ export default class Adapter {
 				return;
 			}
 
-			this.writing[uid] = node;
+			level[writing][uid] = node;
 
 			// Check to see if it exists.
 			level.get(uid, options, (error, result) => {
