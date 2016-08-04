@@ -2,6 +2,7 @@
 import Gun from 'gun/gun';
 import union from '../union';
 const writing = Symbol('In-process writes');
+const notFound = /(NotFound|not found|not find)/i;
 const options = {
 	valueEncoding: 'json',
 };
@@ -79,8 +80,7 @@ export default class Adapter {
 
 			// Error handling.
 			if (err) {
-				const notFound = err.message.match(/not found/i);
-				if (notFound) {
+				if (notFound.test(err.message)) {
 
 					// Tell gun nothing was found.
 					cb(null, null);

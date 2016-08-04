@@ -112,6 +112,8 @@ const levelDB = levelup('localhost', {
 
 Even if you're content with the default levelDB setup, I really recommend you scan [this list of plugins](https://github.com/Level/levelup/wiki/Modules). It's inspiring what the community has built.
 
+> `gun-level` will try to read and write values as json. If you're having trouble getting a plugin to work, or keep seeing `"[object Object]"`, make sure it's using the `json` value encoding.
+
 ## Getting Support
 If you're running into problems, feel free to either post an issue on [GitHub](https://github.com/PsychoLlama/gun-level/issues) or chat with us humans in the [Gitter](http://gitter.im/amark/gun/) channel.
 
