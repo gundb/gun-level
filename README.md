@@ -44,7 +44,7 @@ require('gun-level')
 Once they're imported you can create a new database interface:
 
 ```javascript
-const db = new Gun({
+const gun = new Gun({
 	// We'll put options here in a moment.
 })
 ```
@@ -72,7 +72,7 @@ const levelDB = levelup('data', {
 Now we pass our new levelDB instance to the `Gun` constructor.
 
 ```javascript
-const db = new Gun({
+const gun = new Gun({
 	level: levelDB,
 })
 ```
