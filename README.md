@@ -6,119 +6,140 @@
 
 LevelDB is awesome. It's awesomer with gun.
 
-This driver let's you use level as your persistence layer for gun.
+## Overview
+[GunDB](http://gun.js.org) is a graph database engine with real-time sync and offline-editing. Although gun comes with storage and sync out of the box, it's design is pluggable, so you can still use your favorite storage backend or transport layer by using an adapter.
 
-## usage
+LevelDB operates on a similar paradigm. It ships with an interface called [`LevelUP`](https://github.com/Level/levelup) that gives all the methods you'd expect from a storage engine (like `get`, `put`, `batch`, etc.) and forwards those to a lower-level database (it uses [`LevelDOWN`](https://github.com/Level/leveldown) by default).
 
-To begin, `npm install gun-level` and change `require('gun')` to `require('gun-level')`. Boom, you're done! The rest is optional tweaking to meet your needs. By default, all your gun instances will persist to a folder named `level/` in the same directory as your code. Let's take a look at the ways you can customize gun-level:
+Arguably the most valuable aspect of level is it's **ecosystem**. There are tons are plugins, backends, dashboards, and utilities made specifically for level. It's kinda like a database buffet.
 
-- `blaze`
-- `path`
-- `share`
-- `up`
-- `down`
-- `db`
+Here, check out [their list of modules!](https://github.com/Level/levelup/wiki/Modules)
 
-Passing those options into the `Gun` constructor will modify the behavior of your gun instance.
+> If you're feeling stressed, don't worry. LevelDB comes out of the box as a quite capable database, and if you don't want to dabble with plugins and configs, there's no need.
 
-```javascript
-var options = {
-	blaze: true,
-	share: true,
-	path: 'localhost',
-	up: require('module-up'),
-	down: require('module-down'),
-	db: customInterface
-}
-new Gun({ level: options })
+So what happens when you combine Level with GunDB? You get the power and control of level right alongside the ease of gun.
+
+That's what this library does.
+
+## Usage
+
+To get started, you'll first need to install gun-level.
+
+> If you're unfamiliar with `npm`, you can get started [here](https://docs.npmjs.com/getting-started/what-is-npm)
+
+```sh
+$ npm install --save gun-level gun
 ```
 
-### blaze: `String/Boolean`
-
-When working with the file system, you can "blaze" a path to your resource. If the path doesn't already exist, it will be built recursively. For example, if we wanted to drop our data into a file at `db/chat/messages.json`, we could say `blaze: 'db/chat/messages.json'` and if any part of the path doesn't exist, it will be built.
-
-### path: `String`
-
-If you're not pointing to the file system or want to avoid blazing a path (such is the case with a URL), you can use `path`. Unless you switch blaze on, no files or folders will be created.
-
-### share: `Boolean`
-
-Some implementations (I'm looking at you, levelDown) can't have more than one instance pointing to the same database. By setting the `share` option, you can reuse any instance already open at that path.
-
-> **Note:** you can only share a database if both (or more) parties have opted into sharing.
-
-### up: `Function`
-
-Setting this option allows you to exchange the level interface for another. This is useful when you're running gun-level in the browser through a build step like [webpack](https://github.com/webpack/webpack) or [browserify](https://github.com/substack/node-browserify), and want a level interface that was designed for the browser.
-
-> **Note:** I am actively working to help gun become friendlier to build steps. Right now it's a tad sketchy.
-
-### down: `Function`
-
-This is the most powerful option - it lets you exchange the driver for any API compatible levelDown module. To see why this is amazingly super cool, check out this [list of modules](https://github.com/Level/levelup/wiki/Modules#storage).
-
-Exchanging the backend is remarkably simple:
+Now require them from your node project.
 
 ```javascript
-new Gun({
-	level: {
-		path: 'data.json',
-		down: require('jsondown')
-	}
+// Imports the `Gun` library
+const Gun = require('gun')
+
+// Imported for side effects, adds level adapters.
+require('gun-level')
+```
+
+Once they're imported you can create a new database interface:
+
+```javascript
+const gun = new Gun({
+	// We'll put options here in a moment.
 })
 ```
 
-Boom, now your persistence layer is a json file named `data.json`. Give it a shot! You can find jsondown [here](https://github.com/toolness/jsondown).
+Sweet, you're set up! However, `gun-level` won't do anything unless you pass it a levelDB instance through the constructor. For that, you'll need to download level:
 
-Now, as fun as json is, it's not terribly impressive. Mongo would be impressive. Here's the code you'd need to write to save into mongo:
+```sh
+$ npm install --save levelup leveldown
+```
+
+> If you get a build error at this step, replace all examples of `leveldown` with `jsondown`.
 
 ```javascript
-// start your mongo server
+// Import the two libraries
+const levelup = require('levelup')
+const leveldown = require('leveldown')
 
-new Gun({
-	level: {
-		path: 'localhost',
-		down: require('mongodown')
-	}
+// Create a new level instance which saves
+// to the `data/` folder.
+const levelDB = levelup('data', {
+	db: leveldown,
 })
 ```
 
-Whaaaaaaat? Yeah. It's that cool. If you need more configuration, instead of passing the `require`, we can pass an object:
+Now we pass our new levelDB instance to the `Gun` constructor.
 
 ```javascript
-new Gun({
-	level: {
-		path: 'localhost',
-		down: {
-			db: require('redisdown'),
-			host: 'localhost',
-			port: 6379
-		}
-	}
+const gun = new Gun({
+	level: levelDB,
 })
 ```
 
-This is the configuration object passed to levelup (with defaults under the hood). If you want to override any of level's native settings, that's how it's done.
+Done! Now your gun instance is backed up to levelDB.
 
-### db: `Object`
-
-Skip the middleman entirely. If you're already using a level interface, you can pass it directly to your gun instance.
+Let's try a few things...
 
 ```javascript
-var levelUP = require('levelup')
-var level = levelUP('path')
+const bob = gun.get('bob').put({ name: 'Bob' })
+const dave = gun.get('dave').put({ name: 'Dave' })
 
-new Gun({
-	level: {
-		db: level
-	}
+// Write a fun circular reference.
+bob.path('friend').put(dave)
+dave.path('friend').put(bob)
+
+// Print the data!
+bob.path('friend.name').val()
+bob.path('friend.friend.name').val()
+```
+
+That's pretty much all there is to the `gun-level` API. If you're unfamiliar with gun's API, [here's a good reference](https://github.com/amark/gun/wiki/API-%28v0.3.x%29).
+
+## Advanced Levelry
+You've seen the basics, but it's not enough. You crave more power.
+
+To exchange backends with level, like Riak, Mongo, IndexedDB, etc., you can find the official list of storage backends [here](https://github.com/Level/levelup/wiki/Modules#storage-back-ends). Usually it's just a matter of passing the module as the `db` option to `levelup`, like so:
+
+```javascript
+const levelup = require('levelup')
+const mongoDown = require('mongodown')
+
+const levelDB = levelup('localhost', {
+	db: mongoDown,
 })
 ```
 
-If you simply want to share an existing level instance with gun, that's how it's done.
+Even if you're content with the default levelDB setup, I really recommend you scan [this list of plugins](https://github.com/Level/levelup/wiki/Modules). It's inspiring what the community has built.
 
-## finishing words
+> `gun-level` will try to read and write values as json. If you're having trouble getting a plugin to work, or keep seeing `"[object Object]"`, make sure it's using the `json` value encoding.
 
-If you're not yet familiar with gun, you can learn more about it on their [wiki page](https://github.com/amark/gun/wiki/JS-API).
+## Getting Support
+If you're running into problems, feel free to either post an issue on [GitHub](https://github.com/PsychoLlama/gun-level/issues) or chat with us humans in the [Gitter](http://gitter.im/amark/gun/) channel.
 
-That pretty much covers it! If you have any questions or issues, post an issue or submit a pull request. Thanks for checking out gun-level!
+## Installing from Source
+Clone the repo and install the dependencies:
+
+```sh
+$ git clone https://github.com/PsychoLlama/gun-level.git
+$ cd gun-level
+$ npm install
+```
+
+**Running Tests**
+```sh
+# In directory `gun-level`
+$ npm test
+```
+
+**Building**
+```sh
+$ npm run build
+# Compiles to folder `dist/`
+```
+
+## Maintainers
+ - Project owner @PsychoLlama
+ - The friendly @greenkeeperio-bot
+
+Sponsored by the fabulous people at [GunDB](http://gun.js.org/).
