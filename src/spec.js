@@ -9,9 +9,10 @@ describe('Gun using level', function () {
 
 	this.timeout(500);
 
-	let gun, level;
+	let gun, level, key;
 
 	beforeEach(() => {
+		key = Math.random().toString(36).slice(2);
 		level = levelup('test', { db: memdown });
 		gun = new Gun({ level });
 	});
@@ -21,24 +22,24 @@ describe('Gun using level', function () {
 	});
 
 	it('should successfully write data', (done) => {
-		gun.get('data').put({ success: true }, (error) => {
+		gun.get(key).put({ success: true }, (error) => {
 			expect(error).toBeFalsy();
 			done();
 		});
 	});
 
 	it('should be able to read existing data', (done) => {
-		gun.get('data').put({ success: true });
-		gun.get('data').val((data) => {
+		gun.get(key).put({ success: true });
+		gun.get(key).val((data) => {
 			expect(data).toContain({ success: true });
 			done();
 		});
 	});
 
 	it('should merge with existing data', (done) => {
-		gun.put({ data: true }).key('data');
-		gun.put({ success: true }).key('data');
-		const data = gun.get('data');
+		gun.put({ data: true }).key(key);
+		gun.put({ success: true }).key(key);
+		const data = gun.get(key);
 
 		data.val((value) => {
 			expect(value).toContain({ success: true, data: true });
