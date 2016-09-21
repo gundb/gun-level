@@ -13,12 +13,26 @@ Gun.on('opt').event((gun, options) => {
 	const adapter = Adapter.from(level);
 
 	const { wire } = gun.__.opt;
+	const wireGet = wire.get;
+	const wirePut = wire.put;
 
 	// Register the driver.
 	gun.opt({
 		wire: {
-			get: wire.get || adapter.read,
-			put: wire.put || adapter.write,
+		      get: function (lex, cb, o) {
+		      	if (wireGet == null || wireGet == undefined){
+		      		adapter.read(lex, cb)
+		      	} else {
+				wireGet(lex, cb, o) || adapter.read(lex, cb)
+		      	}
+		      },
+		      put: function (graph, cb, o) {
+		      	if (wirePut == null || wirePut == undefined){
+		      		adapter.write(graph, cb)
+		      	} else {
+		        	wirePut(graph, cb, o) || adapter.write(graph, cb)
+		      	}
+		      }
 		},
 	}, true);
 
