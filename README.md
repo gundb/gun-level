@@ -138,8 +138,9 @@ $ npm run build
 # Compiles to folder `dist/`
 ```
 
-## Maintainers
+## Contributors
  - Project owner @PsychoLlama
+ - Code contributor @swhgoon
  - The friendly @greenkeeperio-bot
 
 Sponsored by the fabulous people at [GunDB](http://gun.js.org/).
