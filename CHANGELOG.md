@@ -1,5 +1,10 @@
 # Changelog
 
+## v4.0.1
+### Fixed
+- Plugin system compatibility improvements (thanks swhgoon!).
+- React Native babel configuration conflicts resolved.
+
 ## v4.0.0
 ### Added:
  - `changelog` file.
