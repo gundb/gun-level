@@ -35,13 +35,5 @@
     "levelup": "^1.3.2",
     "memdown": "^1.2.0",
     "mocha": "^3.0.0"
-  },
-  "babel": {
-    "presets": [
-      "es2015"
-    ],
-    "plugins": [
-      "transform-runtime"
-    ]
   }
 }
