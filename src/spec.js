@@ -5,16 +5,16 @@ import levelup from 'levelup';
 import Gun from 'gun/gun';
 import './index';
 
-describe('Gun using level', function () {
+describe.only('Gun using level', function () {
 
-  this.timeout(500);
+  this.timeout(2000);
 
   let gun, level, key;
 
   beforeEach(() => {
     key = Math.random().toString(36).slice(2);
     level = levelup('test', { db: memdown });
-    gun = new Gun({ level });
+    gun = Gun({ level });
   });
 
   it('should report not found data', (done) => {
@@ -22,7 +22,7 @@ describe('Gun using level', function () {
   });
 
   it('should successfully write data', (done) => {
-    gun.get(key).put({ success: true }, (error) => {
+    gun.get(key).put({ success: true }).any((error) => {
       expect(error).toBeFalsy();
       done();
     });
@@ -54,8 +54,8 @@ describe('Gun using level', function () {
     bob.path('friend').put(dave);
     dave.path('friend').put(bob);
 
-    bob.path('friend.friend.name').val((name) => {
-      expect(name).toBe('Bob');
+    bob.path('friend.friend').val((value) => {
+      expect(value.name).toBe('Bob');
       done();
     });
   });

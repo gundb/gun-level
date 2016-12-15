@@ -1,37 +1,12 @@
 /* eslint-disable id-length*/
 import Gun from 'gun/gun';
-import union from '../union';
 const writing = Symbol('In-process writes');
 const notFound = /(NotFound|not found|not find)/i;
 const options = {
   valueEncoding: 'json',
 };
 
-/**
- * Give the gun callback a resulting node, handling stream signals.
- *
- * @param  {Function} cb - The callback from gun.
- * @param  {Object} node - The node found from level.
- * @returns {undefined}
- */
-function done (cb, node) {
-
-  // Give gun the node.
-  cb(null, node);
-
-  // This generates a pointer for the node.
-  const uid = Gun.is.node.soul(node);
-  const rel = Gun.is.node.soul.ify({
-    _: node._,
-  }, uid);
-
-  // Gun understands that pointer as the end of the stream.
-  cb(null, rel);
-
-  // Tell gun there's nothing else coming.
-  cb(null, {});
-
-}
+const { union } = Gun.HAM;
 
 /**
  * Read/write hooks for Gun.
@@ -48,65 +23,71 @@ export default class Adapter {
 
   constructor (level) {
 
-   // Save a reference to level.
+    // Save a reference to level.
     this.level = level;
 
-   // Preserve the `this` context for read/write calls.
+    // Preserve the `this` context for read/write calls.
     this.read = this.read.bind(this);
     this.write = this.write.bind(this);
 
-   // In-process writes.
+    // In-process writes.
     level[writing] = level[writing] || {};
   }
 
   /**
    * Read a key from LevelDB.
    *
-   * @param  {Object} query - A lexical cursor passed by Gun.
-   * @param  {Function} cb - A callback to invoke on finishing.
+   * @param  {Object} context - A gun request context.
    * @returns {undefined}
    */
-  read (query, cb) {
+  read (context) {
+    const { get, gun } = context;
     const { level } = this;
-    const { '#': key } = query;
+    const { '#': key } = get;
+
+    const done = (err, data) => gun._.root.on('in', {
+      '@': context['#'],
+      put: Gun.graph.node(data),
+      err,
+    });
 
     const value = level[writing][key];
     if (value) {
-      return done(cb, value);
+      return done(null, value);
     }
 
-   // Read from level.
+    // Read from level.
     return level.get(key, options, (err, result) => {
 
-     // Error handling.
+      // Error handling.
       if (err) {
         if (notFound.test(err.message)) {
 
-        // Tell gun nothing was found.
-          cb(null, null);
+          // Tell gun nothing was found.
+          done(null);
           return;
         }
-        cb({ err });
-        return;
 
+        done(err);
+        return;
       }
 
-     // Pass gun the result.
-      done(cb, result);
+      // Pass gun the result.
+      done(null, result);
     });
   }
 
   /**
    * Write a every node in a graph to level.
    *
-   * @param  {Object} graph - A graph instance from gun.
-   * @param  {Function} cb - A callback to invoke when finished.
+   * @param  {Object} context - A gun write context.
    * @returns {undefined}
    */
-  write (graph, cb) {
+  write (context) {
     const { level } = this;
+    const { put: graph, gun } = context;
 
-   // Create a new batch write.
+    // Create a new batch write.
     const batch = level.batch();
 
     const keys = Object.keys(graph);
@@ -118,19 +99,19 @@ export default class Adapter {
     * @param  {Error} [err] - An error given by level.
     * @returns {undefined}
     */
-    function writeHandler (err) {
+    function writeHandler (err = null) {
 
-     // Remove the in-process writes.
+      // Remove the in-process writes.
       keys.forEach((key) => {
         delete level[writing][key];
       });
 
-     // Report whether it succeeded.
-      if (err) {
-        cb({ err });
-      } else {
-        cb(null);
-      }
+      // Report whether it succeeded.
+      gun._.root.on('in', {
+        '@': context['#'],
+        ok: !err,
+        err,
+      });
     }
 
    /**
@@ -142,24 +123,24 @@ export default class Adapter {
     */
     function writeWhenReady (counted) {
 
-     // Wait until we've checked all the nodes before
-     // submitting the batch.
+      // Wait until we've checked all the nodes before
+      // submitting the batch.
       if (counted < keys.length) {
         return;
       }
 
-     // Write all the nodes to level.
+      // Write all the nodes to level.
       batch.write(writeHandler);
     }
 
-   // Each node in the graph...
+    // Each node in the graph...
     keys.forEach((uid) => {
-      const node = graph[uid];
+      let node = graph[uid];
       const value = level[writing][uid];
 
-     // Check to see if it's in the process of writing.
+      // Check to see if it's in the process of writing.
       if (value) {
-        union(node, value);
+        node = union(node, value);
         merged += 1;
         batch.put(uid, node, options);
 
@@ -169,17 +150,17 @@ export default class Adapter {
 
       level[writing][uid] = node;
 
-     // Check to see if it exists.
+      // Check to see if it exists.
       level.get(uid, options, (error, result) => {
 
-      // If we already have data...
+        // If we already have data...
         if (!error) {
 
-        // Merge with the write.
-          union(node, result);
+          // Merge with the write.
+          node = union(node, result);
         }
 
-      // Add the node to our write batch.
+        // Add the node to our write batch.
         batch.put(uid, node, options);
 
         writeWhenReady(merged += 1);
