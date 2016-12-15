@@ -1,5 +1,10 @@
 # Changelog
 
+## v5.0.0
+### Changed
+- Gun's plugin system has changed a bunch between 0.3 and 0.4.\
+`gun-level` v0.5 drops support for 0.3 in favor of gun's [new version](https://github.com/amark/gun/tree/0.5).
+
 ## v4.0.1
 ### Fixed
 - Plugin system compatibility improvements (thanks swhgoon!).
