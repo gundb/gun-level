@@ -40,9 +40,9 @@ function merger (node, field, value, state) {
  * @returns {Object} - The merged node (mutated).
  */
 function union (node, update) {
-	merge(node, update, noop, merger, noop);
+  merge(node, update, noop, merger, noop);
 
-	return node;
+  return node;
 }
 
 export default union;
