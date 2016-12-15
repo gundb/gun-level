@@ -5,7 +5,7 @@ import levelup from 'levelup';
 import Gun from 'gun/gun';
 import './index';
 
-describe.only('Gun using level', function () {
+describe('Gun using level', function () {
 
   this.timeout(2000);
 

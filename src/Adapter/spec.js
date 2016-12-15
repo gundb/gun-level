@@ -12,7 +12,6 @@ describe('An adapter', function () {
 
   this.timeout(50);
 
-  function noop () {}
   let adapter, lex, gun, ctx;
   const level = levelup('test', {
     db: memdown,
@@ -129,6 +128,7 @@ describe('An adapter', function () {
         }),
       };
       write = spyOn(level, 'batch').andCallThrough();
+      ctx.put = graph;
 
     });
 
@@ -137,7 +137,7 @@ describe('An adapter', function () {
     after(() => write.restore());
 
     it('should create a level batch write', () => {
-      adapter.write(graph, noop);
+      adapter.write(ctx);
 
       expect(write).toHaveBeenCalled();
     });
