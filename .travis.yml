@@ -1,5 +1,16 @@
 language: node_js
+
 node_js:
   - 6
   - 5
   - 4
+
+deploy:
+  provider: npm
+  email: Jesse_Gibson@me.com
+  api_key:
+    secure: m+IVQoQmwo0fc807kcE4HxNnUWGvUNshSJM0+VySiRuDGhenoQ68phBzXKLlPmCGxbai+geQ+PkZXcp45oJ/W8s/zalDY+O0TTZddGIJGGpnxEf+fHnvbUe6IN/dCt4YMBV1+DDshU9i4MnCVbhy5niWsqerCyy/NSxpXwjp4cMyF7BkJwIu9JNr+enT+mJruuX9IYbHPEzQEm5+rMPRn7FFG/GXKxonoQIR0ZWxppa9JO9TkIJohi6wdj1ZK56fMio19NynHMumtgCokakoHHIUU7NtEV3DbWrMZ5JIL3SQjB7shminBjhQHUFgk8QbnpfnNK5MaO/v6xn8GcBeII+E55P/zl1wCfhKtqwrarnN/KgoteA2KtC3LwUSTCO+rLDUv1NzB9Fp6cEV1TD/8EjNJBVvRmTGr3ezDITADU2bICCDpPmnKY0RIDr+bPX6F/CHCCgq+t5KnJa0I89R2lvnvSZxF5vS2Kuq6kXdiW5sXmMd/0SWuI7FzIGp5tU0DKmu7B87Esan1BHivejPfiQbnXkzXEWHllXM1fuJ531dP0rjpwO0Xpe6wdeDkyLR4A9/YLOJHNb/SLq2/gAPQHwSWhGiILKD8xfN5XaDmpiUCQ/z2dyqufi6FFs5Q1R3UtTkbag4F2IaxAmw3TMYp7+hm1OWf1fZkiubai6lSAY=
+  on:
+    branch: master
+    tags: true
+    repo: PsychoLlama/gun-level
