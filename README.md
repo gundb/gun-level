@@ -74,6 +74,7 @@ Now we pass our new levelDB instance to the `Gun` constructor.
 ```javascript
 const gun = new Gun({
 	level: levelDB,
+	file: false,
 })
 ```
 
