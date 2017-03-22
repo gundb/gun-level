@@ -22,8 +22,8 @@ describe('Gun using level', function () {
   });
 
   it('should successfully write data', (done) => {
-    gun.get(key).put({ success: true }).any((error) => {
-      expect(error).toBeFalsy();
+    gun.get(key).put({ success: true }, (ctx) => {
+      expect(ctx.err).toBeFalsy();
       done();
     });
   });
@@ -37,8 +37,8 @@ describe('Gun using level', function () {
   });
 
   it('should merge with existing data', (done) => {
-    gun.put({ data: true }).key(key);
-    gun.put({ success: true }).key(key);
+    gun.get(key).put({ data: true });
+    gun.get(key).put({ success: true });
     const data = gun.get(key);
 
     data.val((value) => {
