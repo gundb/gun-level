@@ -1,102 +1,147 @@
-/* eslint-disable require-jsdoc*/
-import {
-	describe,
-	it,
-	before,
-	beforeEach,
-	afterEach,
-} from 'mocha';
-import expect, { spyOn } from 'expect';
+/* eslint-env mocha */
+/* eslint-disable require-jsdoc, id-length */
+import expect, { spyOn, createSpy } from 'expect';
 import Adapter from './';
 import levelup from 'levelup';
 import memdown from 'memdown';
 import Gun from 'gun/gun';
 
+const node = (obj) => Gun.node.ify(obj, Gun.state.map());
+
 describe('An adapter', function () {
 
-	this.timeout(50);
+  this.timeout(50);
 
-	function noop () {}
-	let adapter;
-	let lex;
-	const level = levelup('test', {
-		db: memdown,
-	});
+  let adapter, lex, gun, ctx;
+  const level = levelup('test', {
+    db: memdown,
+  });
 
-	beforeEach(() => {
-		adapter = new Adapter(level);
-		const key = Math.random().toString(36).slice(2);
-		lex = { '#': key };
-	});
+  beforeEach(() => {
+    adapter = new Adapter(level);
+    const key = Gun.text.random();
+    lex = { '#': key };
+    gun = {
+      on: Gun.on,
+    };
+    gun._ = { root: gun };
+  });
 
-	describe('read', () => {
+  describe('read', () => {
+    let spy;
 
-		const spy = spyOn(level, 'get');
-		afterEach(() => spy.reset());
+    beforeEach(() => {
+      ctx = {
+        '#': Gun.text.random(),
+        get: lex,
+        gun,
+      };
+      spy = createSpy();
+    });
 
-		it('should call `level.get`', () => {
-			adapter.read(lex, noop);
+    const read = spyOn(level, 'get');
+    afterEach(() => read.reset());
+    after(() => read.restore());
 
-			expect(spy).toHaveBeenCalled();
-		});
+    it('should call `level.get`', () => {
+      adapter.read(ctx);
 
-		it('should use the `#` property as the key', () => {
-			adapter.read(lex, noop);
+      expect(read).toHaveBeenCalled();
+    });
 
-			const uid = spy.calls[0].arguments[0];
-			expect(uid).toBe(lex['#']);
-		});
+    it('should use the `#` property as the key', () => {
+      adapter.read(ctx);
 
-		it('should always use json encoding', () => {
-			adapter.read(lex, noop);
-			const [, options] = spy.calls[0].arguments;
-			expect(options.valueEncoding).toBe('json');
-		});
+      const uid = read.calls[0].arguments[0];
+      expect(uid).toBe(lex['#']);
+    });
 
-		it('should not error when keys cannot be found', (done) => {
-			spy.andCallThrough();
+    it('should always use json encoding', () => {
+      adapter.read(ctx);
+      const [, options] = read.calls[0].arguments;
+      expect(options.valueEncoding).toBe('json');
+    });
 
-			adapter.read(lex, (error) => {
-				expect(error).toBe(null);
-				done();
-			});
-		});
+    it('should respond when it finds data', () => {
+      gun.on('in', spy);
+      const value = node({ value: true });
 
-		it('should pass the error on unrecognized errors', (done) => {
-			const error = new Error('Part of the test');
-			spy.andCall((key, options, done) => done(error));
+      // Fake a Level response.
+      read.andCall(
+        (key, opt, cb) => cb(null, value)
+      );
 
-			adapter.read(lex, ({ err }) => {
-				expect(err).toBe(error);
-				done();
-			});
-		});
+      adapter.read(ctx);
 
-	});
+      // Validate the adapter's response.
+      expect(spy).toHaveBeenCalled();
+      const [result] = spy.calls[0].arguments;
+      expect(result['@']).toBe(ctx['#']);
+      expect(result.put).toEqual(Gun.graph.node(value));
+    });
 
-	describe('write', () => {
+    it('should not error out on NotFound results', () => {
+      gun.on('in', spy);
 
-		let graph, spy;
+      // Fake a not-found response.
+      read.andCall((key, opt, cb) => {
+        const err = new Error('Key not found');
+        cb(err);
+      });
 
-		before(() => {
+      adapter.read(ctx);
 
-			graph = {
-				potato: Gun.is.node.ify({
-					hello: 'world',
-				}),
-			};
-			spy = spyOn(level, 'batch').andCallThrough();
+      expect(spy).toHaveBeenCalled();
+      const [result] = spy.calls[0].arguments;
 
-		});
+      expect(result).toContain({
+        err: null,
+        '@': ctx['#'],
+        put: Gun.graph.node(),
+      });
+    });
 
-		afterEach(() => spy.reset());
+    it('should pass the error on unrecognized errors', () => {
+      const error = new Error('Part of the test');
+      gun.on('in', spy);
+      read.andCall(
+        (key, options, cb) => cb(error)
+      );
 
-		it('should create a level batch write', () => {
-			adapter.write(graph, noop);
+      adapter.read(ctx);
+      expect(spy).toHaveBeenCalled();
+      const [result] = spy.calls[0].arguments;
+      expect(result.err).toBe(error);
+    });
 
-			expect(spy).toHaveBeenCalled();
-		});
+  });
 
-	});
+  describe('write', () => {
+
+    let graph, write;
+
+    before(() => {
+
+      graph = {
+        potato: Gun.node.ify({
+          hello: 'world',
+        }),
+      };
+      write = spyOn(level, 'batch').andCallThrough();
+      ctx.put = graph;
+
+    });
+
+    afterEach(() => write.reset());
+
+    after(() => write.restore());
+
+    it('should create a level batch write', () => {
+      adapter.write(ctx);
+
+      expect(write).toHaveBeenCalled();
+    });
+
+  });
 
 });

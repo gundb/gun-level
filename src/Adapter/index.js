@@ -1,37 +1,12 @@
 /* eslint-disable id-length*/
 import Gun from 'gun/gun';
-import union from '../union';
 const writing = Symbol('In-process writes');
 const notFound = /(NotFound|not found|not find)/i;
 const options = {
-	valueEncoding: 'json',
+  valueEncoding: 'json',
 };
 
-/**
- * Give the gun callback a resulting node, handling stream signals.
- *
- * @param  {Function} cb - The callback from gun.
- * @param  {Object} node - The node found from level.
- * @returns {undefined}
- */
-function done (cb, node) {
-
-	// Give gun the node.
-	cb(null, node);
-
-	// This generates a pointer for the node.
-	const uid = Gun.is.node.soul(node);
-	const rel = Gun.is.node.soul.ify({
-		_: node._,
-	}, uid);
-
-	// Gun understands that pointer as the end of the stream.
-	cb(null, rel);
-
-	// Tell gun there's nothing else coming.
-	cb(null, {});
-
-}
+const { union } = Gun.HAM;
 
 /**
  * Read/write hooks for Gun.
@@ -42,151 +17,157 @@ function done (cb, node) {
  */
 export default class Adapter {
 
-	static 'from' (level) {
-		return new Adapter(level);
-	}
+  static 'from' (level) {
+    return new Adapter(level);
+  }
 
-	constructor (level) {
+  constructor (level) {
 
-		// Save a reference to level.
-		this.level = level;
+    // Save a reference to level.
+    this.level = level;
 
-		// Preserve the `this` context for read/write calls.
-		this.read = this.read.bind(this);
-		this.write = this.write.bind(this);
+    // Preserve the `this` context for read/write calls.
+    this.read = this.read.bind(this);
+    this.write = this.write.bind(this);
 
-		// In-process writes.
-		level[writing] = level[writing] || {};
-	}
+    // In-process writes.
+    level[writing] = level[writing] || {};
+  }
 
-	/**
-	 * Read a key from LevelDB.
-	 *
-	 * @param  {Object} query - A lexical cursor passed by Gun.
-	 * @param  {Function} cb - A callback to invoke on finishing.
-	 * @returns {undefined}
-	 */
-	read (query, cb) {
-		const { level } = this;
-		const { '#': key } = query;
+  /**
+   * Read a key from LevelDB.
+   *
+   * @param  {Object} context - A gun request context.
+   * @returns {undefined}
+   */
+  read (context) {
+    const { get, gun } = context;
+    const { level } = this;
+    const { '#': key } = get;
 
-		const value = level[writing][key];
-		if (value) {
-			return done(cb, value);
-		}
+    const done = (err, data) => gun._.root.on('in', {
+      '@': context['#'],
+      put: Gun.graph.node(data),
+      err,
+    });
 
-		// Read from level.
-		return level.get(key, options, (err, result) => {
+    const value = level[writing][key];
+    if (value) {
+      return done(null, value);
+    }
 
-			// Error handling.
-			if (err) {
-				if (notFound.test(err.message)) {
+    // Read from level.
+    return level.get(key, options, (err, result) => {
 
-					// Tell gun nothing was found.
-					cb(null, null);
-					return;
-				}
-				cb({ err });
-				return;
+      // Error handling.
+      if (err) {
+        if (notFound.test(err.message)) {
 
-			}
+          // Tell gun nothing was found.
+          done(null);
+          return;
+        }
 
-			// Pass gun the result.
-			done(cb, result);
-		});
-	}
+        done(err);
+        return;
+      }
 
-	/**
-	 * Write a every node in a graph to level.
-	 *
-	 * @param  {Object} graph - A graph instance from gun.
-	 * @param  {Function} cb - A callback to invoke when finished.
-	 * @returns {undefined}
-	 */
-	write (graph, cb) {
-		const { level } = this;
+      // Pass gun the result.
+      done(null, result);
+    });
+  }
 
-		// Create a new batch write.
-		const batch = level.batch();
+  /**
+   * Write a every node in a graph to level.
+   *
+   * @param  {Object} context - A gun write context.
+   * @returns {undefined}
+   */
+  write (context) {
+    const { level } = this;
+    const { put: graph, gun } = context;
 
-		const keys = Object.keys(graph);
-		let merged = 0;
+    // Create a new batch write.
+    const batch = level.batch();
 
-		/**
-		 * Report errors and clear out the in-process write cache.
-		 *
-		 * @param  {Error} [err] - An error given by level.
-		 * @returns {undefined}
-		 */
-		function writeHandler (err) {
+    const keys = Object.keys(graph);
+    let merged = 0;
 
-			// Remove the in-process writes.
-			keys.forEach((key) => {
-				delete level[writing][key];
-			});
+   /**
+    * Report errors and clear out the in-process write cache.
+    *
+    * @param  {Error} [err] - An error given by level.
+    * @returns {undefined}
+    */
+    function writeHandler (err = null) {
 
-			// Report whether it succeeded.
-			if (err) {
-				cb({ err });
-			} else {
-				cb(null);
-			}
-		}
+      // Remove the in-process writes.
+      keys.forEach((key) => {
+        delete level[writing][key];
+      });
 
-		/**
-		 * Determine whether a write should happen and invoke it,
-		 * passing the handler.
-		 *
-		 * @param  {Number} counted - The number of keys merged.
-		 * @returns {undefined}
-		 */
-		function writeWhenReady (counted) {
+      // Report whether it succeeded.
+      gun._.root.on('in', {
+        '@': context['#'],
+        ok: !err,
+        err,
+      });
+    }
 
-			// Wait until we've checked all the nodes before
-			// submitting the batch.
-			if (counted < keys.length) {
-				return;
-			}
+   /**
+    * Determine whether a write should happen and invoke it,
+    * passing the handler.
+    *
+    * @param  {Number} counted - The number of keys merged.
+    * @returns {undefined}
+    */
+    function writeWhenReady (counted) {
 
-			// Write all the nodes to level.
-			batch.write(writeHandler);
-		}
+      // Wait until we've checked all the nodes before
+      // submitting the batch.
+      if (counted < keys.length) {
+        return;
+      }
 
-		// Each node in the graph...
-		keys.forEach((uid) => {
-			const node = graph[uid];
-			const value = level[writing][uid];
+      // Write all the nodes to level.
+      batch.write(writeHandler);
+    }
 
-			// Check to see if it's in the process of writing.
-			if (value) {
-				union(node, value);
-				merged += 1;
-				batch.put(uid, node, options);
+    // Each node in the graph...
+    keys.forEach((uid) => {
+      let node = graph[uid];
+      const value = level[writing][uid];
 
-				writeWhenReady(merged);
-				return;
-			}
+      // Check to see if it's in the process of writing.
+      if (value) {
+        node = union(node, value);
+        merged += 1;
+        batch.put(uid, node, options);
 
-			level[writing][uid] = node;
+        writeWhenReady(merged);
+        return;
+      }
 
-			// Check to see if it exists.
-			level.get(uid, options, (error, result) => {
+      level[writing][uid] = node;
 
-				// If we already have data...
-				if (!error) {
+      // Check to see if it exists.
+      level.get(uid, options, (error, result) => {
 
-					// Merge with the write.
-					union(node, result);
-				}
+        // If we already have data...
+        if (!error) {
 
-				// Add the node to our write batch.
-				batch.put(uid, node, options);
+          // Merge with the write.
+          node = union(node, result);
+        }
 
-				writeWhenReady(merged += 1);
-			});
+        // Add the node to our write batch.
+        batch.put(uid, node, options);
 
-		});
+        writeWhenReady(merged += 1);
+      });
 
-	}
+    });
+
+  }
 
 }
