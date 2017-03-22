@@ -1242,13 +1242,14 @@ growl@1.9.2:
   version "1.9.2"
   resolved "https://registry.yarnpkg.com/growl/-/growl-1.9.2.tgz#0ea7743715db8d8de2c5ede1775e1b45ac85c02f"
 
-gun@^0.6.6:
-  version "0.6.6"
-  resolved "https://registry.yarnpkg.com/gun/-/gun-0.6.6.tgz#9c2e4d9fd9aaa89d3ff7194831f8fa85f44e2473"
+gun@^0.6.7:
+  version "0.6.7"
+  resolved "https://registry.yarnpkg.com/gun/-/gun-0.6.7.tgz#ae67665780efd9a1d3044f8d187e3a67af95cd88"
   dependencies:
     aws-sdk "~>2.15.0"
     formidable "~>1.0.15"
     uws "~>0.13.0"
+    ws "~>2.2.1 "
 
 har-validator@~2.0.6:
   version "2.0.6"
@@ -2397,6 +2398,10 @@ uid-number@~0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/uid-number/-/uid-number-0.0.6.tgz#0ea10e8035e8eb5b8e4449f06da1c730663baa81"
 
+ultron@~1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/ultron/-/ultron-1.1.0.tgz#b07a2e6a541a815fc6a34ccd4533baec307ca864"
+
 url@0.10.3:
   version "0.10.3"
   resolved "https://registry.yarnpkg.com/url/-/url-0.10.3.tgz#021e4d9c7705f21bbf37d03ceb58767402774c64"
@@ -2461,6 +2466,12 @@ write@^0.2.1:
   resolved "https://registry.yarnpkg.com/write/-/write-0.2.1.tgz#5fc03828e264cea3fe91455476f7a3c566cb0757"
   dependencies:
     mkdirp "^0.5.1"
+
+"ws@~>2.2.1 ":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-2.2.2.tgz#aa26daf39c52b20ed716e3447f8641494a726b01"
+  dependencies:
+    ultron "~1.1.0"
 
 xml2js@0.4.15:
   version "0.4.15"
