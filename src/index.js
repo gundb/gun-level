@@ -12,10 +12,16 @@ Gun.on('opt', (context) => {
 
   const adapter = Adapter.from(level);
 
-  // Register the driver.
-  Gun.on('get', adapter.read);
-  Gun.on('put', adapter.write);
+  // Allows other plugins to respond concurrently.
+  const pluginInterop = (middleware) => function (context) {
+    this.to.next(context);
 
+    return middleware(context);
+  };
+
+  // Register the driver.
+  Gun.on('get', pluginInterop(adapter.read));
+  Gun.on('put', pluginInterop(adapter.write));
 });
 
 module.exports = Gun;
