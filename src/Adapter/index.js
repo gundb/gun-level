@@ -6,6 +6,7 @@ const options = {
   valueEncoding: 'json',
 };
 
+/* eslint-disable */
 const union = function union(vertex, node, opt){
 	if(!node || !node._){ return }
 	vertex = vertex || Gun.state.to(node);
@@ -19,6 +20,7 @@ const union = function union(vertex, node, opt){
 	})){ return }
 	return opt.union;
 }
+/* eslint-enable */
 
 /**
  * Read/write hooks for Gun.
