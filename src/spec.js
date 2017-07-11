@@ -18,7 +18,10 @@ describe('Gun using level', function () {
   });
 
   it('should report not found data', (done) => {
-    gun.get('no such key').not(() => done());
+    gun.get('no such key').val(notFound => {
+      expect(notFound).toBe(undefined);
+      done();
+    });
   });
 
   it('should successfully write data', (done) => {
@@ -51,10 +54,10 @@ describe('Gun using level', function () {
     const bob = gun.get('bob').put({ name: 'Bob' });
     const dave = gun.get('dave').put({ name: 'Dave' });
 
-    bob.path('friend').put(dave);
-    dave.path('friend').put(bob);
+    bob.get('friend').put(dave);
+    dave.get('friend').put(bob);
 
-    bob.path('friend.friend').val((value) => {
+    bob.get('friend').get('friend').val((value) => {
       expect(value.name).toBe('Bob');
       done();
     });
