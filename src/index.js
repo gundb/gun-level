@@ -20,8 +20,8 @@ Gun.on('opt', (context) => {
   };
 
   // Register the driver.
-  Gun.on('get', pluginInterop(adapter.read));
-  Gun.on('put', pluginInterop(adapter.write));
+  context.on('get', pluginInterop(adapter.read));
+  context.on('put', pluginInterop(adapter.write));
 });
 
 module.exports = Gun;

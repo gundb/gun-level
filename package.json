@@ -23,8 +23,7 @@
   "author": "Jesse Gibson",
   "license": "MIT",
   "dependencies": {
-    "babel-runtime": "^6.11.6",
-    "gun": "^0.7.0"
+    "babel-runtime": "^6.11.6"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",
