@@ -38,6 +38,7 @@ Now require them from your node project.
 const Gun = require('gun')
 
 // Imported for side effects, adds level adapters.
+// MUST be required after Gun to work
 require('gun-level')
 ```
 
@@ -87,12 +88,18 @@ const bob = gun.get('bob').put({ name: 'Bob' })
 const dave = gun.get('dave').put({ name: 'Dave' })
 
 // Write a fun circular reference.
-bob.path('friend').put(dave)
-dave.path('friend').put(bob)
+bob.get('friend').put(dave)
+dave.get('friend').put(bob)
 
 // Print the data!
-bob.path('friend.name').val()
-bob.path('friend.friend.name').val()
+bob.get('friend').val(friend => {
+	console.log(friend.name) // Dave
+});
+
+// Now with a circular reference
+bob.get('friend').get('friend').val(friend => {
+	console.log(friend.name) // Bob
+});
 ```
 
 That's pretty much all there is to the `gun-level` API. If you're unfamiliar with gun's API, [here's a good reference](https://github.com/amark/gun/wiki/API-%28v0.3.x%29).
@@ -100,14 +107,21 @@ That's pretty much all there is to the `gun-level` API. If you're unfamiliar wit
 ## Advanced Levelry
 You've seen the basics, but it's not enough. You crave more power.
 
-To exchange backends with level, like Riak, Mongo, IndexedDB, etc., you can find the official list of storage backends [here](https://github.com/Level/levelup/wiki/Modules#storage-back-ends). Usually it's just a matter of passing the module as the `db` option to `levelup`, like so:
+To exchange backends with level, like Riak, Mongo, IndexedDB, etc., you can find the official list of storage backends [here](https://github.com/Level/levelup/wiki/Modules#storage-back-ends). Usually it's just a matter of passing the module as the `db` option to `levelup`. Here's an example with MongoDB using mongodown:
 
 ```javascript
 const levelup = require('levelup')
 const mongoDown = require('mongodown')
 
-const levelDB = levelup('localhost', {
+// Initialize Level
+const levelDB = levelup('localhost:27017/YOUR_COLLECTION_NAME', {
 	db: mongoDown,
+})
+
+// Initialize Gun
+const gun = new Gun({
+	level: levelDB,
+	file: false,
 })
 ```
 
