@@ -2,7 +2,12 @@
 import Adapter from './Adapter';
 import Gun from 'gun/gun';
 
-Gun.on('opt', (context) => {
+Gun.on('opt', function(context) {
+
+  // Pass to next plugins
+  this.to.next(context);
+
+  
   const { level } = context.opt;
 
   // Filter out instances without the level option.
