@@ -2,7 +2,7 @@
 import Adapter from './Adapter';
 import Gun from 'gun/gun';
 
-Gun.on('opt', function(context) {
+Gun.on('opt', function (context) {
 
   // Pass to subsequent opt handlers
   this.to.next(context);
