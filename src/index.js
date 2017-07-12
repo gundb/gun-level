@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import Adapter from './Adapter';
 import Gun from 'gun/gun';
 
