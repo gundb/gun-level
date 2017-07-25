@@ -1,0 +1,17 @@
+env:
+  commonjs: true
+  browser: true
+  node: true
+  es6: true
+
+parser: babel-eslint
+parserOptions:
+  sourceType: module
+
+extends:
+  - eslint:recommended
+  - llama
+  - prettier
+
+rules:
+  require-jsdoc: off

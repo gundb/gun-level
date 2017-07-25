@@ -6,7 +6,8 @@ const options = {
   valueEncoding: 'json',
 };
 
-const union = function union(vertex, node, opt) {
+// Gun merge algorithm, authored by Mark Nadal.
+const union = (vertex, node, opt) => {
   if (!node || !node._) {
     return;
   }
@@ -15,10 +16,10 @@ const union = function union(vertex, node, opt) {
     return;
   }
   opt = Gun.num.is(opt) ? { machine: opt } : { machine: Gun.state() };
-  opt.union = Gun.obj.copy(vertex); // Slow performance.
+  opt.union = Gun.obj.copy(vertex);
   if (
     !Gun.node.is(node, function(val, key) {
-      var HAM = Gun.HAM(
+      const HAM = Gun.HAM(
         opt.machine,
         Gun.state.is(node, key),
         Gun.state.is(vertex, key, true),
@@ -33,7 +34,8 @@ const union = function union(vertex, node, opt) {
   ) {
     return;
   }
-  return opt.union;
+
+  return opt.union; // eslint-disable-line
 };
 
 /**
