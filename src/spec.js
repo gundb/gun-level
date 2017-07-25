@@ -5,8 +5,7 @@ import levelup from 'levelup';
 import Gun from 'gun/gun';
 import './index';
 
-describe('Gun using level', function () {
-
+describe('Gun using level', function() {
   this.timeout(2000);
 
   let gun, level, key;
@@ -17,50 +16,49 @@ describe('Gun using level', function () {
     gun = Gun({ level });
   });
 
-  it('should report not found data', (done) => {
+  it('should report not found data', done => {
     gun.get('no such key').val(notFound => {
       expect(notFound).toBe(undefined);
       done();
     });
   });
 
-  it('should successfully write data', (done) => {
-    gun.get(key).put({ success: true }, (ctx) => {
+  it('should successfully write data', done => {
+    gun.get(key).put({ success: true }, ctx => {
       expect(ctx.err).toBeFalsy();
       done();
     });
   });
 
-  it('should be able to read existing data', (done) => {
+  it('should be able to read existing data', done => {
     gun.get(key).put({ success: true });
-    gun.get(key).val((data) => {
+    gun.get(key).val(data => {
       expect(data).toContain({ success: true });
       done();
     });
   });
 
-  it('should merge with existing data', (done) => {
+  it('should merge with existing data', done => {
     gun.get(key).put({ data: true });
     gun.get(key).put({ success: true });
     const data = gun.get(key);
 
-    data.val((value) => {
+    data.val(value => {
       expect(value).toContain({ success: true, data: true });
       done();
     });
   });
 
-  it('should resolve circular references', (done) => {
+  it('should resolve circular references', done => {
     const bob = gun.get('bob').put({ name: 'Bob' });
     const dave = gun.get('dave').put({ name: 'Dave' });
 
     bob.get('friend').put(dave);
     dave.get('friend').put(bob);
 
-    bob.get('friend').get('friend').val((value) => {
+    bob.get('friend').get('friend').val(value => {
       expect(value.name).toBe('Bob');
       done();
     });
   });
-
 });

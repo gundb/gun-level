@@ -6,21 +6,37 @@ const options = {
   valueEncoding: 'json',
 };
 
-/* eslint-disable */
-const union = function union(vertex, node, opt){
-	if(!node || !node._){ return }
-	vertex = vertex || Gun.state.to(node);
-	if(!vertex || !vertex._){ return }
-	opt = Gun.num.is(opt)? {machine: opt} : {machine: Gun.state()};
-	opt.union = Gun.obj.copy(vertex); // Slow performance.
-	if(!Gun.node.is(node, function(val, key){
-		var HAM = Gun.HAM(opt.machine, Gun.state.is(node, key), Gun.state.is(vertex, key, true), val, vertex[key]);
-		if(!HAM.incoming){ return }
-		Gun.state.to(node, key, opt.union);
-	})){ return }
-	return opt.union;
-}
-/* eslint-enable */
+// Gun merge algorithm, authored by Mark Nadal.
+const union = (vertex, node, opt) => {
+  if (!node || !node._) {
+    return;
+  }
+  vertex = vertex || Gun.state.to(node);
+  if (!vertex || !vertex._) {
+    return;
+  }
+  opt = Gun.num.is(opt) ? { machine: opt } : { machine: Gun.state() };
+  opt.union = Gun.obj.copy(vertex);
+  if (
+    !Gun.node.is(node, function(val, key) {
+      const HAM = Gun.HAM(
+        opt.machine,
+        Gun.state.is(node, key),
+        Gun.state.is(vertex, key, true),
+        val,
+        vertex[key],
+      );
+      if (!HAM.incoming) {
+        return;
+      }
+      Gun.state.to(node, key, opt.union);
+    })
+  ) {
+    return;
+  }
+
+  return opt.union; // eslint-disable-line
+};
 
 /**
  * Read/write hooks for Gun.
@@ -30,13 +46,11 @@ const union = function union(vertex, node, opt){
  * @class
  */
 export default class Adapter {
-
-  static 'from' (level) {
+  static from(level) {
     return new Adapter(level);
   }
 
-  constructor (level) {
-
+  constructor(level) {
     // Save a reference to level.
     this.level = level;
 
@@ -54,16 +68,17 @@ export default class Adapter {
    * @param  {Object} context - A gun request context.
    * @returns {undefined}
    */
-  read (context) {
+  read(context) {
     const { get, gun } = context;
     const { level } = this;
     const { '#': key } = get;
 
-    const done = (err, data) => gun._.root.on('in', {
-      '@': context['#'],
-      put: Gun.graph.node(data),
-      err,
-    });
+    const done = (err, data) =>
+      gun._.root.on('in', {
+        '@': context['#'],
+        put: Gun.graph.node(data),
+        err,
+      });
 
     const value = level[writing][key];
     if (value) {
@@ -72,11 +87,9 @@ export default class Adapter {
 
     // Read from level.
     return level.get(key, options, (err, result) => {
-
       // Error handling.
       if (err) {
         if (notFound.test(err.message)) {
-
           // Tell gun nothing was found.
           done(null);
           return;
@@ -97,7 +110,7 @@ export default class Adapter {
    * @param  {Object} context - A gun write context.
    * @returns {undefined}
    */
-  write (context) {
+  write(context) {
     const { level } = this;
     const { put: graph, gun } = context;
 
@@ -107,16 +120,15 @@ export default class Adapter {
     const keys = Object.keys(graph);
     let merged = 0;
 
-   /**
+    /**
     * Report errors and clear out the in-process write cache.
     *
     * @param  {Error} [err] - An error given by level.
     * @returns {undefined}
     */
-    function writeHandler (err = null) {
-
+    function writeHandler(err = null) {
       // Remove the in-process writes.
-      keys.forEach((key) => {
+      keys.forEach(key => {
         delete level[writing][key];
       });
 
@@ -128,15 +140,14 @@ export default class Adapter {
       });
     }
 
-   /**
+    /**
     * Determine whether a write should happen and invoke it,
     * passing the handler.
     *
     * @param  {Number} counted - The number of keys merged.
     * @returns {undefined}
     */
-    function writeWhenReady (counted) {
-
+    function writeWhenReady(counted) {
       // Wait until we've checked all the nodes before
       // submitting the batch.
       if (counted < keys.length) {
@@ -148,7 +159,7 @@ export default class Adapter {
     }
 
     // Each node in the graph...
-    keys.forEach((uid) => {
+    keys.forEach(uid => {
       let node = graph[uid];
       const value = level[writing][uid];
 
@@ -166,10 +177,8 @@ export default class Adapter {
 
       // Check to see if it exists.
       level.get(uid, options, (error, result) => {
-
         // If we already have data...
         if (!error) {
-
           // Merge with the write.
           node = union(node, result);
         }
@@ -177,11 +186,8 @@ export default class Adapter {
         // Add the node to our write batch.
         batch.put(uid, node, options);
 
-        writeWhenReady(merged += 1);
+        writeWhenReady((merged += 1));
       });
-
     });
-
   }
-
 }

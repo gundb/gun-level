@@ -6,10 +6,9 @@ import levelup from 'levelup';
 import memdown from 'memdown';
 import Gun from 'gun/gun';
 
-const node = (obj) => Gun.node.ify(obj, Gun.state.map());
+const node = obj => Gun.node.ify(obj, Gun.state.map());
 
-describe('An adapter', function () {
-
+describe('An adapter', function() {
   this.timeout(50);
 
   let adapter, lex, gun, ctx;
@@ -67,9 +66,7 @@ describe('An adapter', function () {
       const value = node({ value: true });
 
       // Fake a Level response.
-      read.andCall(
-        (key, opt, cb) => cb(null, value)
-      );
+      read.andCall((key, opt, cb) => cb(null, value));
 
       adapter.read(ctx);
 
@@ -104,24 +101,19 @@ describe('An adapter', function () {
     it('should pass the error on unrecognized errors', () => {
       const error = new Error('Part of the test');
       gun.on('in', spy);
-      read.andCall(
-        (key, options, cb) => cb(error)
-      );
+      read.andCall((key, options, cb) => cb(error));
 
       adapter.read(ctx);
       expect(spy).toHaveBeenCalled();
       const [result] = spy.calls[0].arguments;
       expect(result.err).toBe(error);
     });
-
   });
 
   describe('write', () => {
-
     let graph, write;
 
     before(() => {
-
       graph = {
         potato: Gun.node.ify({
           hello: 'world',
@@ -129,7 +121,6 @@ describe('An adapter', function () {
       };
       write = spyOn(level, 'batch').andCallThrough();
       ctx.put = graph;
-
     });
 
     afterEach(() => write.reset());
@@ -141,7 +132,5 @@ describe('An adapter', function () {
 
       expect(write).toHaveBeenCalled();
     });
-
   });
-
 });
