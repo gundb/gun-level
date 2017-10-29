@@ -70,7 +70,7 @@ export default class Adapter {
    * @returns {undefined}
    */
   read(context) {
-    const { get, gun } = context;
+    const { get } = context;
     const { level } = this;
     const { '#': key } = get;
     const value = level[writing][key];
@@ -102,7 +102,7 @@ export default class Adapter {
    *
    * @param  {Object} context - A gun request context.
    * @param  {Error|null} err - An Error object, if any
-   * @param  {Object|null|undefined} - The node retrieved, if found
+   * @param  {Object|null|undefined} data - The node retrieved, if found
    * @returns {undefined}
    */
   afterRead(context, err, data) {
@@ -120,9 +120,9 @@ export default class Adapter {
    * @returns {undefined}
    */
   write(context) {
-    const _this = this;
+    const self = this;
     const { level } = this;
-    const { put: graph, gun } = context;
+    const { put: graph } = context;
 
     // Create a new batch write.
     const batch = level.batch();
@@ -143,7 +143,7 @@ export default class Adapter {
       });
 
       // Report whether it succeeded.
-      _this.ctx.on('in', {
+      self.ctx.on('in', {
         '@': context['#'],
         ok: !err,
         err,

@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 /* eslint-disable require-jsdoc, id-length */
-import expect, { spyOn, createSpy } from 'expect';
+import expect, { spyOn } from 'expect';
 import Adapter from './';
 import levelup from 'levelup';
 import memdown from 'memdown';
@@ -25,15 +25,12 @@ describe('An adapter', function() {
   });
 
   describe('read', () => {
-    let spy;
-
     beforeEach(() => {
       ctx = {
         '#': Gun.text.random(),
         get: lex,
         gun,
       };
-      spy = createSpy();
     });
 
     const read = spyOn(level, 'get');
@@ -60,6 +57,8 @@ describe('An adapter', function() {
     });
 
     it('should respond when it finds data', done => {
+      const value = node({ value: true });
+
       adapter.ctx.on('put', result => {
         expect(result['@']).toBe(ctx['#']);
         expect(result.put).toEqual(Gun.graph.node(value));
@@ -67,7 +66,6 @@ describe('An adapter', function() {
       });
 
       // Setup a Level response.
-      const value = node({ value: true });
       read.andCall((key, opt, cb) => cb(null, value));
 
       // Initialize read request
@@ -89,7 +87,7 @@ describe('An adapter', function() {
 
       // Assertions
       expect(afterRead).toHaveBeenCalled();
-      const [requestConect, error, data] = afterRead.calls[0].arguments;
+      const [requestConect, error] = afterRead.calls[0].arguments;
       expect(requestConect).toContain({
         '#': ctx['#'],
       });
@@ -113,7 +111,7 @@ describe('An adapter', function() {
 
       // Assertions
       expect(afterRead).toHaveBeenCalled();
-      const [context, returnedErr] = afterRead.calls[0].arguments;
+      const [, returnedErr] = afterRead.calls[0].arguments;
       expect(returnedErr).toBe(error);
 
       // Reset state

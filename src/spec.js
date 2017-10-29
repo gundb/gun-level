@@ -1,3 +1,4 @@
+/* eslint-disable require-jsdoc, id-length */
 import { describe, it, beforeEach } from 'mocha';
 import expect from 'expect';
 import memdown from 'memdown';
@@ -10,6 +11,8 @@ let gun, level, key;
 /**
  * Refresh the level instance, effectively clearing out
  * any data stored in memory
+ * 
+ * @returns {undefined}
  */
 const makeLevel = () => {
   level = levelup('test', { db: memdown });
@@ -20,6 +23,8 @@ const makeLevel = () => {
  * 
  * This means that any part of the Graph stored in Gun is wiped
  * out but that it is still in level (as long as makeLevel isn't also called)
+ * 
+ * @returns {Gun} A gun instance
  */
 const makeGun = () => {
   gun = Gun({ level });
@@ -100,7 +105,7 @@ describe('Gun using level', function() {
     profiles.set(bob).set(dave);
 
     let count = 0;
-    makeGun().get('profiles').map().on((profile, key) => {
+    makeGun().get('profiles').map().on(profile => {
       // Check nodes for proper form
       if (profile.name === 'Bob') {
         expect(profile).toContain({ name: 'Bob' });
@@ -109,7 +114,7 @@ describe('Gun using level', function() {
       }
 
       // ensure all profiles are found before completing
-      count++;
+      count += 1;
       if (count === 2) {
         done();
       }
