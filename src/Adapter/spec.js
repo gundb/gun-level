@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 /* eslint-disable require-jsdoc, id-length */
-import expect, { spyOn, createSpy } from 'expect';
+import expect, { spyOn } from 'expect';
 import Adapter from './';
 import levelup from 'levelup';
 import memdown from 'memdown';
@@ -9,33 +9,28 @@ import Gun from 'gun/gun';
 const node = obj => Gun.node.ify(obj, Gun.state.map());
 
 describe('An adapter', function() {
-  this.timeout(50);
+  this.timeout(100);
 
   let adapter, lex, gun, ctx;
   const level = levelup('test', {
     db: memdown,
   });
+  const context = new Gun({ level });
 
   beforeEach(() => {
-    adapter = new Adapter(level);
+    adapter = new Adapter(level, context);
     const key = Gun.text.random();
     lex = { '#': key };
-    gun = {
-      on: Gun.on,
-    };
-    gun._ = { root: gun };
+    gun = context;
   });
 
   describe('read', () => {
-    let spy;
-
     beforeEach(() => {
       ctx = {
         '#': Gun.text.random(),
         get: lex,
         gun,
       };
-      spy = createSpy();
     });
 
     const read = spyOn(level, 'get');
@@ -61,24 +56,25 @@ describe('An adapter', function() {
       expect(options.valueEncoding).toBe('json');
     });
 
-    it('should respond when it finds data', () => {
-      gun.on('in', spy);
+    it('should respond when it finds data', done => {
       const value = node({ value: true });
 
-      // Fake a Level response.
+      adapter.ctx.on('put', result => {
+        expect(result['@']).toBe(ctx['#']);
+        expect(result.put).toEqual(Gun.graph.node(value));
+        done();
+      });
+
+      // Setup a Level response.
       read.andCall((key, opt, cb) => cb(null, value));
 
+      // Initialize read request
       adapter.read(ctx);
-
-      // Validate the adapter's response.
-      expect(spy).toHaveBeenCalled();
-      const [result] = spy.calls[0].arguments;
-      expect(result['@']).toBe(ctx['#']);
-      expect(result.put).toEqual(Gun.graph.node(value));
     });
 
     it('should not error out on NotFound results', () => {
-      gun.on('in', spy);
+      // Spy on the after read method
+      const afterRead = spyOn(adapter, 'afterRead');
 
       // Fake a not-found response.
       read.andCall((key, opt, cb) => {
@@ -86,27 +82,41 @@ describe('An adapter', function() {
         cb(err);
       });
 
+      // Initialize fake read request
       adapter.read(ctx);
 
-      expect(spy).toHaveBeenCalled();
-      const [result] = spy.calls[0].arguments;
-
-      expect(result).toContain({
-        err: null,
-        '@': ctx['#'],
-        put: Gun.graph.node(),
+      // Assertions
+      expect(afterRead).toHaveBeenCalled();
+      const [requestConect, error] = afterRead.calls[0].arguments;
+      expect(requestConect).toContain({
+        '#': ctx['#'],
       });
+      expect(error).toBe(null);
+
+      // Reset state
+      afterRead.reset();
+      afterRead.restore();
     });
 
     it('should pass the error on unrecognized errors', () => {
+      // Spy on the after read method
+      const afterRead = spyOn(adapter, 'afterRead');
+
+      // Setup test
       const error = new Error('Part of the test');
-      gun.on('in', spy);
       read.andCall((key, options, cb) => cb(error));
 
+      // Run test
       adapter.read(ctx);
-      expect(spy).toHaveBeenCalled();
-      const [result] = spy.calls[0].arguments;
-      expect(result.err).toBe(error);
+
+      // Assertions
+      expect(afterRead).toHaveBeenCalled();
+      const [, returnedErr] = afterRead.calls[0].arguments;
+      expect(returnedErr).toBe(error);
+
+      // Reset state
+      afterRead.reset();
+      afterRead.restore();
     });
   });
 

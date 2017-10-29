@@ -12,14 +12,14 @@ Gun.on('opt', function(context) {
     return;
   }
 
-  const adapter = Adapter.from(level);
+  const adapter = Adapter.from(level, context);
 
   // Allows other plugins to respond concurrently.
   const pluginInterop = middleware =>
-    function(context) {
-      this.to.next(context);
+    function(ctx) {
+      this.to.next(ctx);
 
-      return middleware(context);
+      return middleware(ctx);
     };
 
   // Register the driver.

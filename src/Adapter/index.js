@@ -46,13 +46,14 @@ const union = (vertex, node, opt) => {
  * @class
  */
 export default class Adapter {
-  static from(level) {
-    return new Adapter(level);
+  static from(level, context) {
+    return new Adapter(level, context);
   }
 
-  constructor(level) {
-    // Save a reference to level.
+  constructor(level, ctx) {
+    // Save a reference to level and the gun instance
     this.level = level;
+    this.ctx = ctx;
 
     // Preserve the `this` context for read/write calls.
     this.read = this.read.bind(this);
@@ -69,20 +70,12 @@ export default class Adapter {
    * @returns {undefined}
    */
   read(context) {
-    const { get, gun } = context;
+    const { get } = context;
     const { level } = this;
     const { '#': key } = get;
-
-    const done = (err, data) =>
-      gun._.root.on('in', {
-        '@': context['#'],
-        put: Gun.graph.node(data),
-        err,
-      });
-
     const value = level[writing][key];
     if (value) {
-      return done(null, value);
+      return this.afterRead(context, null, value);
     }
 
     // Read from level.
@@ -91,16 +84,32 @@ export default class Adapter {
       if (err) {
         if (notFound.test(err.message)) {
           // Tell gun nothing was found.
-          done(null);
+          this.afterRead(context, null);
           return;
         }
 
-        done(err);
+        this.afterRead(context, err);
         return;
       }
 
       // Pass gun the result.
-      done(null, result);
+      this.afterRead(context, null, result);
+    });
+  }
+
+  /**
+   * Return data to Gun
+   *
+   * @param  {Object} context - A gun request context.
+   * @param  {Error|null} err - An Error object, if any
+   * @param  {Object|null|undefined} data - The node retrieved, if found
+   * @returns {undefined}
+   */
+  afterRead(context, err, data) {
+    this.ctx.on('in', {
+      '@': context['#'],
+      put: Gun.graph.node(data),
+      err,
     });
   }
 
@@ -111,8 +120,9 @@ export default class Adapter {
    * @returns {undefined}
    */
   write(context) {
+    const self = this;
     const { level } = this;
-    const { put: graph, gun } = context;
+    const { put: graph } = context;
 
     // Create a new batch write.
     const batch = level.batch();
@@ -133,7 +143,7 @@ export default class Adapter {
       });
 
       // Report whether it succeeded.
-      gun._.root.on('in', {
+      self.ctx.on('in', {
         '@': context['#'],
         ok: !err,
         err,
