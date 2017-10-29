@@ -3,6 +3,7 @@ import { describe, it, beforeEach } from 'mocha';
 import expect from 'expect';
 import memdown from 'memdown';
 import levelup from 'levelup';
+import encode from 'encoding-down';
 import Gun from 'gun/gun';
 import './index';
 
@@ -15,7 +16,7 @@ let gun, level, key;
  * @returns {undefined}
  */
 const makeLevel = () => {
-  level = levelup('test', { db: memdown });
+  level = levelup(encode(memdown('test'), { valueEncoding: 'json' }));
 };
 
 /**
@@ -71,9 +72,17 @@ describe('Gun using level', function() {
     const g = makeGun();
 
     // write initial data
-    g.get(key).put({ data: true }, () => {
+    g.get(key).put({ data: true }, res1 => {
+      if (res1.err) {
+        throw res1.err;
+      }
+
       // add to it
-      g.get(key).put({ success: true }, () => {
+      g.get(key).put({ success: true }, res2 => {
+        if (res2.err) {
+          throw res2.err;
+        }
+
         // verify data merge
         makeGun().get(key).val(value => {
           expect(value).toContain({ success: true, data: true });
