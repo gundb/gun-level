@@ -1,5 +1,9 @@
 # Changelog
 
+## v6.0.2
+### Fixed
+- Compatibility with gun v0.8 (see PR #39 & issue #38).
+
 ## v6.0.0
 ### Changed
 - Updated for gun v0.8 (thanks @sjones6!). The default export of `gun-level` is now `gun` v0.8 which has many breaking changes.
