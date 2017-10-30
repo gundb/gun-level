@@ -23,7 +23,7 @@ That's what this library does.
 
 ## Usage
 
-To get started, you'll first need to install gun-level.
+To get started, you'll first need to install `gun-level`.
 
 > If you're unfamiliar with `npm`, you can get started [here](https://docs.npmjs.com/getting-started/what-is-npm)
 
@@ -34,7 +34,7 @@ $ npm install --save gun-level gun
 Now require them from your node project.
 
 ```javascript
-// Imports the `Gun` library
+// Import the `Gun` library
 const Gun = require('gun')
 
 // Imported for side effects, adds level adapters.
@@ -42,7 +42,7 @@ const Gun = require('gun')
 require('gun-level')
 ```
 
-Once they're imported you can create a new database interface:
+Once they're imported you can create a new Gun database:
 
 ```javascript
 const gun = new Gun({
@@ -50,7 +50,11 @@ const gun = new Gun({
 })
 ```
 
-Sweet, you're set up! However, `gun-level` won't do anything unless you pass it a levelDB instance through the constructor. For that, you'll need to download level:
+Sweet, you're set up! However, `gun-level` won't do anything unless you pass it a levelDB instance through the `Gun` constructor. For that, you'll need to download the Node `levelup` package.
+
+> There are some differences between `levelup` v1 and v2 so be sure to note which version you're using.
+
+### `levelup` v1
 
 ```sh
 $ npm install --save levelup leveldown
@@ -70,16 +74,47 @@ const levelDB = levelup('data', {
 })
 ```
 
-Now we pass our new levelDB instance to the `Gun` constructor.
+### `levelup` >v2
+
+> Note that Levelup v2 only supports Node >6.
+
+```sh
+$ npm install --save levelup leveldown encoding-down
+```
 
 ```javascript
+// Import the required libraries
+const levelup = require('levelup')
+const encode = require('encoding-down')
+const leveldown = require('leveldown')
+
+// Create a new level instance which saves
+// to the `data/` folder.
+const levelDB = levelup(
+	encode(
+		leveldown('data'),
+		{ valueEncoding: 'json' }
+	)
+)
+```
+
+### Instantiating Gun with Level
+
+Now we can pass our new levelDB instance to the `Gun` constructor.
+
+```javascript
+const Gun = require('gun')
+require('gun-level')
+
+// ... instantiate LevelDB per above
+
+// Pass LevelDB instance into Gun
 const gun = new Gun({
-	level: levelDB,
-	file: false,
+	level: levelDB
 })
 ```
 
-Done! Now your gun instance is backed up to levelDB.
+Done! Now your `gun` database will store it's graph in your Level DB!
 
 Let's try a few things...
 

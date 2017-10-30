@@ -4,6 +4,7 @@ import expect, { spyOn } from 'expect';
 import Adapter from './';
 import levelup from 'levelup';
 import memdown from 'memdown';
+import encode from 'encoding-down';
 import Gun from 'gun/gun';
 
 const node = obj => Gun.node.ify(obj, Gun.state.map());
@@ -12,9 +13,7 @@ describe('An adapter', function() {
   this.timeout(100);
 
   let adapter, lex, gun, ctx;
-  const level = levelup('test', {
-    db: memdown,
-  });
+  const level = levelup(encode(memdown('test'), { valueEncoding: 'json' }));
   const context = new Gun({ level });
 
   beforeEach(() => {
