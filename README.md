@@ -76,6 +76,8 @@ const levelDB = levelup('data', {
 
 ### `levelup` >v2
 
+> Note that Levelup v2 only supports Node >6.
+
 ```sh
 $ npm install --save levelup leveldown encoding-down
 ```
