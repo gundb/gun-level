@@ -1,6 +1,6 @@
 {
   "name": "gun-level",
-  "version": "6.0.3",
+  "version": "6.0.4",
   "description": "levelDB persistence layer for gun",
   "main": "dist/index.js",
   "scripts": {
