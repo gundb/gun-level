@@ -142,7 +142,9 @@ That's pretty much all there is to the `gun-level` API. If you're unfamiliar wit
 ## Advanced Levelry
 You've seen the basics, but it's not enough. You crave more power.
 
-To exchange backends with level, like Riak, Mongo, IndexedDB, etc., you can find the official list of storage backends [here](https://github.com/Level/levelup/wiki/Modules#storage-back-ends). Usually it's just a matter of passing the module as the `db` option to `levelup`. Here's an example with MongoDB using mongodown:
+To exchange backends with level, like Riak, Mongo, IndexedDB, etc., you can find the official list of storage backends [here](https://github.com/Level/levelup/wiki/Modules#storage-back-ends). Usually it's just a matter of passing the module as the `db` option to `levelup`.
+
+Here's an example with MongoDB using `mongodown`:
 
 ```javascript
 const levelup = require('levelup')
@@ -157,6 +159,23 @@ const levelDB = levelup('localhost:27017/YOUR_COLLECTION_NAME', {
 const gun = new Gun({
 	level: levelDB,
 	file: false,
+})
+```
+
+Here's another example with IndexedDB using `level-js`:
+
+```javascript
+const levelup = require('levelup')
+const leveldown = require('level-js')
+const encode = require('encoding-down')
+
+// Initialize Level
+const levelDB = levelup(encode(leveldown('my-big-db'), { valueEncoding: 'json' }))
+
+// Initialize Gun
+const gun = Gun({
+    level: levelDB,
+    localStorage: false,
 })
 ```
 
