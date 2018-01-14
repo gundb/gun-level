@@ -3,6 +3,7 @@
   "version": "6.0.2",
   "description": "levelDB persistence layer for gun",
   "main": "dist/index.js",
+  "browser": "dist/browser.js",
   "scripts": {
     "prettier": "prettier --single-quote --trailing-comma all",
     "test": "mocha src/ --opts ./mocha.opts",
@@ -44,7 +45,7 @@
     "eslint-config-llama": "^3.0.0",
     "eslint-config-prettier": "^2.3.0",
     "expect": "^1.20.2",
-    "gun": "^0.8",
+    "gun": "^0.9.7",
     "husky": "^0.14.3",
     "levelup": "^2.0.0",
     "lint-staged": "^4.0.2",
@@ -53,6 +54,6 @@
     "prettier": "^1.5.3"
   },
   "peerDependencies": {
-    "gun": "^0.8.0"
+    "gun": "^0.9.7"
   }
 }
