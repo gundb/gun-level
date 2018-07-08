@@ -78,6 +78,12 @@ export default class Adapter {
       return this.afterRead(context, null, value);
     }
 
+    // tell gun nothing was found if no key available
+    //  - probably wrong somewhere else if it tries to read w/o key
+    //  - TODO: possibly warn?
+    //  - atm. prefer server not to go down + little time
+    if (!key) return this.afterRead(context, null);
+
     // Read from level.
     return level.get(key, options, (err, result) => {
       // Error handling.
