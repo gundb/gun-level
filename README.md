@@ -6,6 +6,12 @@
 
 LevelDB is awesome. It's awesomer with gun.
 
+# `indexedDB` NOW SUPPORTED IN MAIN GUN REPO - THIS REPO NO LONGER MAINTAINED
+
+The [main GUN repo](https://github.com/amark/gun) now has `lib/rindexed` that can be used [like so](https://github.com/amark/gun/blob/master/test/tmp/indexedDB.html), now built on the RAD storage engine for GUN.
+
+If you still need NodeJS LevelDB bindings, consider writing a RAD adapter, or use this project - please contribute and maintain it for others, as it is now deprecated.
+
 ## Overview
 [GunDB](http://gun.js.org) is a graph database engine with real-time sync and offline-editing. Although gun comes with storage and sync out of the box, it's design is pluggable, so you can still use your favorite storage backend or transport layer by using an adapter.
 
